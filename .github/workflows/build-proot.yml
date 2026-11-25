@@ -1,0 +1,73 @@
+# Build proot aarch64 — pemicu manual (workflow_dispatch) + bulanan (schedule).
+# Artefak "proot-aarch64" (biner proot) dipakai job build/e2e di ci.yml untuk
+# diletakkan sebagai android/app/libs/arm64-v8a/libproot.so.
+# Untuk v0.1.0, CI utama tetap membangun APK dengan placeholder kosong bila
+# artefak ini belum tersedia; developer lokal memakai
+# scripts/build_proot_aarch64.sh. Semua komentar dalam bahasa Indonesia.
+
+name: build-proot
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Bulanan: tanggal 2 jam 03:30 UTC.
+    - cron: '30 3 2 * *'
+
+# Hanya membangun & mengunggah artefak — tidak menulis ke repo.
+permissions:
+  contents: read
+
+# Batalkan run lama pada ref yang sama.
+concurrency:
+  group: build-proot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-proot:
+    name: build proot (aarch64)
+    # Wajib runner linux-arm64 — biner proot harus ELF aarch64 agar bisa
+    # dibundel sebagai libproot.so untuk arm64-v8a.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - name: Checkout OAgents (untuk env/env.lock)
+        uses: actions/checkout@v4
+
+      # Ref proot terkunci di env/env.lock → PROOT_BUILD_REF.
+      - name: Baca PROOT_BUILD_REF dari env.lock
+        run: |
+          PROOT_REF="$(grep -E '^PROOT_BUILD_REF=' env/env.lock | cut -d= -f2)"
+          echo "PROOT_REF=${PROOT_REF}" >> "$GITHUB_ENV"
+          echo "Ref proot: ${PROOT_REF}"
+
+      - name: Checkout proot-me/proot (depth 1, ref terkunci)
+        uses: actions/checkout@v4
+        with:
+          repository: proot-me/proot
+          ref: ${{ env.PROOT_REF }}
+          path: proot-src
+          fetch-depth: 1
+
+      # Deps build di runner Ubuntu (arm64): clang, libarchive (opsi -R tar),
+      # libtalloc dipakai proot, libcap untuk fitur kapabilitas.
+      - name: Install dependencies build
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            clang libarchive-dev libtalloc-dev libcap-dev \
+            build-essential pkg-config make
+
+      - name: Build proot (CC=clang, hanya biner proot)
+        run: |
+          make -C proot-src/src clean >/dev/null 2>&1 || true
+          CC=clang make -C proot-src/src proot
+          file proot-src/src/proot
+
+      # Artefak dipakai ci.yml (job build) untuk diletakkan sebagai
+      # android/app/libs/arm64-v8a/libproot.so (lihat scripts/build_proot_aarch64.sh).
+      - name: Upload artefak proot-aarch64
+        uses: actions/upload-artifact@v4
+        with:
+          name: proot-aarch64
+          path: proot-src/src/proot
+          if-no-files-found: error

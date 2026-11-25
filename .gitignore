@@ -1,0 +1,27 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins*
+.pub-cache/
+.pub/
+*.iml
+.idea/
+
+# Android
+android/.gradle/
+android/local.properties
+android/app/release/
+*.jks
+*.keystore
+key.properties
+
+# Lingkungan & runtime (tidak masuk repo)
+rootfs/
+*.tar.gz
+opencode-*
+proot
+.env
+
+# CI
+coverage/

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "devtools/android-cli",
+    "name": "Android CLI Tools",
+    "description": "Memakai adb, avdmanager, sdkmanager & cmdline-tools dari dalam rootfs.",
+    "path": "assets/skills/devtools/android-cli/"
+  },
+  {
+    "id": "devtools/jetpack-compose",
+    "name": "Jetpack Compose",
+    "description": "Migrasi layout XML ke Compose, state, Material 3, dan preview di Android Studio.",
+    "path": "assets/skills/devtools/jetpack-compose/"
+  },
+  {
+    "id": "devtools/testing-setup",
+    "name": "Testing Setup",
+    "description": "Menyiapkan unit test JUnit, test UI Espresso/Compose dan menjalankan gradlew test via proot.",
+    "path": "assets/skills/devtools/testing-setup/"
+  },
+  {
+    "id": "devtools/performance",
+    "name": "Performance",
+    "description": "Profil dengan macrobenchmark, systrace/Perfetto, dan kurangi jank serta startup lambat.",
+    "path": "assets/skills/devtools/performance/"
+  },
+  {
+    "id": "devtools/security",
+    "name": "Security",
+    "description": "Analisis keamanan statis, network security config, proguard/R8 dan pen-test dasar.",
+    "path": "assets/skills/devtools/security/"
+  },
+  {
+    "id": "devtools/play",
+    "name": "Play Store",
+    "description": "Rilis APK/AAB, signing, keystore, jalur internal testing dan kebijakan Play.",
+    "path": "assets/skills/devtools/play/"
+  },
+  {
+    "id": "devtools/build-system/agp/agp-9-upgrade",
+    "name": "AGP 9 Upgrade",
+    "description": "Menaikkan Android Gradle Plugin ke 9.x: migrasi DSL, JDK 17 ke 21, dan perbaikan warning build.",
+    "path": "assets/skills/devtools/build-system/agp/agp-9-upgrade/"
+  }
+]

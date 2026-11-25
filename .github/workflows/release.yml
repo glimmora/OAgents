@@ -1,0 +1,174 @@
+# Rilis OAgents — pemicu push tag v*.
+# Verifikasi versi tag == pubspec, build APK rilis (split-per-abi) + AAB,
+# verifikasi tanda tangan (apksigner bila ada; fallback keytool+jarsigner),
+# lalu buat GitHub Release dengan changelog + sha256sum.
+# Semua komentar dalam bahasa Indonesia.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Rilis butuh membuat GitHub Release + upload aset.
+permissions:
+  contents: write
+
+# Batalkan run lama pada ref (tag) yang sama.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.24.x'
+
+jobs:
+  release:
+    name: release (APK + AAB signed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout (full history untuk changelog)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ---- Verifikasi versi tag == version di pubspec.yaml ---------------
+      - name: Verifikasi versi tag vs pubspec
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PUBSPEC_VERSION="$(grep -E '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)"
+          echo "Tag      : ${TAG_VERSION}"
+          echo "Pubspec  : ${PUBSPEC_VERSION}"
+          if [ "${TAG_VERSION}" != "${PUBSPEC_VERSION}" ]; then
+            echo "::error::Versi tag (${TAG_VERSION}) != version pubspec.yaml (${PUBSPEC_VERSION})."
+            echo "Perbarui pubspec.yaml (version: ${TAG_VERSION}+N) lalu buat ulang tag."
+            exit 1
+          fi
+          echo "Versi cocok."
+
+      # ---- Keystore: decode dari secret; jika kosong → unsigned ----------
+      # KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+      - name: Restore keystore dari secret
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "${KEYSTORE_BASE64}" ]; then
+            echo "KEYSTORE_BASE64 kosong — build rilis unsigned (apksigner dilewati)."
+            touch .ci-no-keystore
+          else
+            echo "${KEYSTORE_BASE64}" | base64 -d > android/app/keystore.jks
+            ls -la android/app/keystore.jks
+          fi
+
+      - name: Setup Java 17 (temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.24.x'
+          cache: true
+
+      # Cache paket pub — key dari hash pubspec.yaml.
+      - name: Cache pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Pub get
+        run: flutter pub get
+
+      # ---- Build: APK per-ABI + AAB --------------------------------------
+      - name: Build APK rilis (split per ABI)
+        run: |
+          if [ -f .ci-no-keystore ]; then
+            flutter build apk --release --split-per-abi
+          else
+            flutter build apk --release --split-per-abi \
+              --dart-define=KEYSTORE_PATH=android/app/keystore.jks \
+              --dart-define=KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+              --dart-define=KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+              --dart-define=KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          fi
+
+      - name: Build AAB
+        run: |
+          if [ -f .ci-no-keystore ]; then
+            flutter build appbundle
+          else
+            flutter build appbundle \
+              --dart-define=KEYSTORE_PATH=android/app/keystore.jks \
+              --dart-define=KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+              --dart-define=KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+              --dart-define=KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          fi
+
+      # ---- Verifikasi tanda tangan APK ------------------------------------
+      - name: Verifikasi APK (apksigner bila ada; fallback jarsigner)
+        run: |
+          APKS=$(find build/app/outputs/flutter-apk -name '*.apk' | sort)
+          if [ -f .ci-no-keystore ]; then
+            echo "Unsigned build — verifikasi tanda tangan dilewati (ditandai di notes)."
+            exit 0
+          fi
+          # apksigner: cek build-tools; fallback ke keytool + jarsigner.
+          APKSIGNER="$(find ${ANDROID_HOME} -name apksigner 2>/dev/null | head -n1)"
+          for APK in ${APKS}; do
+            echo "=== ${APK} ==="
+            if [ -n "${APKSIGNER}" ] && [ -x "${APKSIGNER}" ]; then
+              "${APKSIGNER}" verify --print-certs "${APK}" && echo "apksigner: OK"
+            else
+              echo "apksigner tidak ditemukan — fallback keytool+jarsigner."
+              jarsigner -verify -verbose -certs "${APK}" >/dev/null && echo "jarsigner: OK"
+              keytool -printcert -jarfile "${APK}"
+            fi
+          done
+
+      # ---- Changelog sejak tag sebelumnya ---------------------------------
+      - name: Susun changelog + sha256sum
+        run: |
+          PREV_TAG="$(git tag --sort=-v:refname | grep -E '^v' | sed -n 2p)"
+          RANGE="HEAD"
+          if [ -n "${PREV_TAG}" ]; then RANGE="${PREV_TAG}..HEAD"; fi
+          {
+            echo "## Changelog sejak ${PREV_TAG:-awal}"
+            echo
+            echo '```'
+            git log --oneline "${RANGE}"
+            echo '```'
+            echo
+            if [ -f .ci-no-keystore ]; then
+              echo "> CATATAN: build ini **un-signed** — secret KEYSTORE_BASE64 kosong."
+              echo
+            fi
+            echo "## sha256sum"
+            echo
+            echo '```'
+            ( cd build/app/outputs/flutter-apk && sha256sum *.apk ) || true
+            ( cd build/app/outputs/bundle/release && sha256sum *.aab ) || true
+            echo '```'
+          } > release_notes.md
+          cat release_notes.md
+
+      # ---- GitHub Release -------------------------------------------------
+      - name: Buat GitHub Release (APK per-ABI + AAB + notes)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: OAgents ${{ github.ref_name }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            build/app/outputs/flutter-apk/app-*-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

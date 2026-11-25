@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Theme splash saat Flutter masih memuat (before engine paints). -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <!-- Theme aplikasi setelah framework Flutter selesai inisialisasi;
+         dipakai oleh AndroidManifest (NormalTheme meta-data). -->
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:windowBackground</item>
+    </style>
+</resources>

@@ -77,7 +77,7 @@ jobs:
 
       # Cache paket pub — key dari hash pubspec.yaml.
       - name: Cache pub
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.pub-cache
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.yaml') }}

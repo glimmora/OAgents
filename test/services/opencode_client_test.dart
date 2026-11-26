@@ -245,10 +245,16 @@ void main() {
       while (events.isEmpty) {
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
-      unawaited(sub.cancel());
       expect(events.first['event'], 'session.execution.partial');
       expect(events.first['json']['delta'], 'Ha');
-      // Permintaan kedua membawa kursor setelah event seq 42.
+      // Tunggu permintaan ulang (retry) yang membawa kursor after=42 —
+      // race di runner cepat: cancel sebelum retry terjadi membuat
+      // calls.last masih permintaan pertama tanpa kursor.
+      while (!bridge.calls.any((c) => c.$2.contains('after=42'))) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      await sub.cancel();
+      // Permintaan berikutnya membawa kursor setelah event seq 42.
       expect(bridge.calls.last.$2, contains('after=42'));
     });
 

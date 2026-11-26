@@ -1,7 +1,7 @@
 name: oagents
 description: "OAgents — aplikasi Android agent AI dengan opencode CLI sebagai engine (client/server via proot Ubuntu/Alpine)."
 publish_to: "none"
-version: 0.1.0+1
+version: 0.1.1+2
 
 environment:
   sdk: ^3.5.0

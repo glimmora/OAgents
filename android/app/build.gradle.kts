@@ -15,6 +15,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    // KGP modern: compilerOptions DSL — kotlinOptions(String) kini error
+    // pada Gradle 8.9 + KGP 1.9.24 (kotl.in/u1r8ln).
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
+    }
+
     defaultConfig {
         applicationId = "com.glimmora.oagents"
         minSdk = 26
@@ -22,8 +30,8 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // proot hanya dibangun untuk aarch64 — ABI tunggal.
-      // ABI ditata oleh splits + --split-per-abi (ndk abiFilters bentrok dengan splits AGP).
+        // ABI ditata oleh splits di bawah + --split-per-abi Flutter;
+        // ndk abiFilters TIDAK bo dipakai bersamaan (konflik AGP).
     }
 
     // proot hasil CI disalin ke android/app/libs/arm64-v8a/libproot.so
@@ -31,6 +39,27 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("libs")
+        }
+    }
+
+    // ---- Signing rilis ---------------------------------------------------
+    // Keystore didecode workflow release.yml dari secret KEYSTORE_BASE64 ke
+    // android/app/keystore.jks; password/alias lewat env vars yang dibaca
+    // gradle langsung. Lokal tanpa env → fallback debug key (tetap buildable).
+    val keystoreFile = rootProject.file("app/keystore.jks")
+    val storePass = System.getenv("KEYSTORE_PASSWORD") ?: ""
+    val alias = System.getenv("KEY_ALIAS") ?: ""
+    val keyPass = System.getenv("KEY_PASSWORD") ?: ""
+    val hasReleaseKeystore = keystoreFile.exists() && storePass.isNotEmpty()
+
+    if (hasReleaseKeystore) {
+        signingConfigs {
+            create("release") {
+                storeFile = keystoreFile
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
+            }
         }
     }
 
@@ -43,7 +72,25 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                // Tanpa keystore (build lokal tanpa env) → debug key supaya
+                // tetap bisa dibangun; CI rilis selalu menyediakan keystore.
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+
+    // ---- Split per ABI ----------------------------------------------------
+    // flutter build apk --split-per-abi mengirim -Psplit-per-abi=true;
+    // buat APK per ABI (arm64-v8a, armeabi-v7a, x86_64) + universal.
+    splits {
+        abi {
+            isEnable = gradle.startParameter.projectProperties["split-per-abi"] == "true"
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86_64")
+            isUniversalApk = true
         }
     }
 
@@ -67,12 +114,4 @@ dependencies {
     // Kotlin stdlib + org.json (bundel Android) — tanpa library eksternal
     // (kontrak BRIDGE_CONTRACT.md). io.flutter.embedding datang dari
     // subproject plugin via flutter-plugin-loader di settings.gradle.kts.
-}
-
-// KGP modern: compilerOptions DSL — kotlinOptions(String) kini error
-// pada Gradle 8.9 + KGP 1.9.24 (kotl.in/u1r8ln).
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-    }
 }

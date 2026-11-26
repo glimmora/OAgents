@@ -11,9 +11,11 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -44,6 +46,20 @@ class RuntimePlugin(private val context: Context) {
         const val HTTP_TIMEOUT_MS = 15_000
         private const val READ_CHUNK = 16 * 1024
         private const val BUFFER_SIZE = 64 * 1024
+
+        /**
+         * PID dari [Process], portabel lintas level API: java.lang.Process.pid()
+         * hanya backport runtime di Android 14+ dan tidak ada di android.jar
+         * publik, jadi baca lewat reflection; -1 bila tidak tersedia.
+         */
+        fun pidOf(p: Process): Long {
+            return try {
+                val m = Process::class.java.getMethod("pid")
+                (m.invoke(p) as Number).toLong()
+            } catch (t: Throwable) {
+                -1L
+            }
+        }
     }
 
     // --- State server ------------------------------------------------------
@@ -545,7 +561,7 @@ class RuntimePlugin(private val context: Context) {
             process = p
             serverPort = port
             startedAtMs = System.currentTimeMillis()
-            pid = try { p.pid().toInt() } catch (ignored: Throwable) { -1 }
+            pid = pidOf(p).toInt()
             restartCount = 0
             watcherStop.set(false)
 
@@ -607,7 +623,7 @@ class RuntimePlugin(private val context: Context) {
                         pb.environment().put("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
                         val p2 = pb.start()
                         process = p2
-                        pid = try { p2.pid().toInt() } catch (ignored: Throwable) { -1 }
+                        pid = pidOf(p2).toInt()
                         startedAtMs = System.currentTimeMillis()
                         emitProgress("booting", 100, "server dinyalakan ulang (pid $pid)")
                         executor.execute {
@@ -649,7 +665,7 @@ class RuntimePlugin(private val context: Context) {
                 // Destroy process tree: proot + anak-anaknya.
                 // Android tidak punya Process.destroyForcibly untuk tree, jadi
                 // SIGKILL group via kill -9 -PID bila tersedia, lalu destroy().
-                val pidToKill = try { p.pid() } catch (ignored: Throwable) { -1L }
+                val pidToKill = pidOf(p)
                 try {
                     val killer = ProcessBuilder("sh", "-c", "kill -TERM -${pidToKill} 2>/dev/null || kill -TERM ${pidToKill}")
                         .start()
@@ -758,13 +774,19 @@ class RuntimePlugin(private val context: Context) {
                 p.errorStream.bufferedReader().forEachLine { stderr.appendLine(it) }
             }
             var finished = false
-            val watcherF = executor.submit {
+            val watcherF = executor.submit(Callable<Boolean> {
                 try {
                     p.waitFor()
-                } catch (ignored: Throwable) {
+                    true
+                } catch (t: Throwable) {
+                    false
                 }
+            })
+            finished = try {
+                watcherF.get(timeoutMs, TimeUnit.MILLISECONDS)
+            } catch (t: TimeoutException) {
+                false
             }
-            finished = watcherF.get(timeoutMs, TimeUnit.MILLISECONDS)
             if (!finished) {
                 p.destroyForcibly()
                 tOut.cancel(true)

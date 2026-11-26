@@ -135,7 +135,7 @@ jobs:
       # Jika belum ada (belum pernah dijalankan), lewati tanpa gagal —
       # untuk v0.1.0 APK menyertakan placeholder kosong.
       - name: Unduh artefak proot bila ada (opsional)
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v28
         with:
           workflow: build-proot.yml
           name: proot-aarch64

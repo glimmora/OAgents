@@ -2,12 +2,30 @@
 // menjalankan integration_test/ di device nyata (emulator) TANPA melalui
 // package:test harness, sehingga fase "loading" (gradle build + install APK
 // yang di TCG bisa ~10 menit) tidak dijatuhkan timer 12 menit default.
-// Driver hanya connect ke VM Service dan menunggu test selesai; batas waktu
-// adalah job timeout workflow (75 menit), bukan timer per-suite package:test.
+//
+// Retry connect: di TCG (software rendering), isolate sering belum runnable
+// saat driver pertama konek → getIsolate() mengembalikan Sentinel Collected
+// ("isolate taking unusually long time to initialize"). Ulangi connect
+// hingga 4x dengan jeda 30 dtk — race VM-service klasik di emulator lambat.
 import 'package:flutter_driver/flutter_driver.dart';
 
 Future<void> main() async {
-  final FlutterDriver driver = await FlutterDriver.connect();
+  FlutterDriver? driver;
+  Object? lastError;
+  for (var attempt = 1; attempt <= 4; attempt++) {
+    try {
+      driver = await FlutterDriver.connect();
+      break;
+    } catch (e) {
+      lastError = e;
+      // ignore: avoid_print — keluaran diagnostik CLI driver.
+      print('Connect attempt $attempt gagal: $e — ulang dalam 30 dtk.');
+      await Future<void>.delayed(const Duration(seconds: 30));
+    }
+  }
+  if (driver == null) {
+    throw StateError('Driver gagal connect setelah 4 percobaan: $lastError');
+  }
   await driver.waitUntilFirstFrameRasterized();
   final String result = await driver.requestData('integration-test-done',
       timeout: const Duration(minutes: 60));

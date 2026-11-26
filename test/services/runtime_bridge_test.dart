@@ -308,6 +308,9 @@ class _FakeEventChannel implements EventChannel {
   String get name => 'oagents/progress';
 
   @override
+  MethodCodec get codec => const StandardMethodCodec();
+
+  @override
   BinaryMessenger get binaryMessenger =>
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 

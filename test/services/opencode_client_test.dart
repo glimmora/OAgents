@@ -32,7 +32,9 @@ class FakeRuntimeBridge extends RuntimeBridge {
   }) async {
     calls.add((method, path, body));
     if (queue.isEmpty) {
-      return const ProxyResponse(status: 500, body: 'antrean kosong');
+      // Antrean habis = sesi tidak ada lagi → 404 memutus followLog
+      // (loop test tak berjalan abadi dengan retry 500).
+      return const ProxyResponse(status: 404, body: 'antrean kosong');
     }
     return queue.removeAt(0);
   }
@@ -46,10 +48,16 @@ void main() {
 
   setUp(() {
     bridge = FakeRuntimeBridge();
+<<<<<<< HEAD
     // Jeda retry nol supaya test followLog tidak menunggu 2 detik nyata.
     client = OpencodeClient(
       bridge: bridge,
       followRetryDelay: const Duration(milliseconds: 1),
+=======
+    client = OpencodeClient(
+      bridge: bridge,
+      followRetryDelay: const Duration(milliseconds: 5),
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     );
   });
 
@@ -310,7 +318,11 @@ void main() {
       final events = <Map<String, dynamic>>[];
       final sub =
           client.followLog('s5', onRetry: retryDetails.add).listen(events.add);
+<<<<<<< HEAD
       while (events.isEmpty) {
+=======
+      while (events.length < 1) {
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
       unawaited(sub.cancel());

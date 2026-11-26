@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLUTTER_VERSION: '3.24.x'
+  FLUTTER_VERSION: '3.24.5'
 
 jobs:
   release:
@@ -72,7 +72,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.
@@ -88,27 +88,27 @@ jobs:
 
       # ---- Build: APK per-ABI + AAB --------------------------------------
       - name: Build APK rilis (split per ABI)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -f .ci-no-keystore ]; then
             flutter build apk --release --split-per-abi
           else
-            flutter build apk --release --split-per-abi \
-              --dart-define=KEYSTORE_PATH=android/app/keystore.jks \
-              --dart-define=KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
-              --dart-define=KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
-              --dart-define=KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+            flutter build apk --release --split-per-abi
           fi
 
       - name: Build AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -f .ci-no-keystore ]; then
             flutter build appbundle
           else
-            flutter build appbundle \
-              --dart-define=KEYSTORE_PATH=android/app/keystore.jks \
-              --dart-define=KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
-              --dart-define=KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
-              --dart-define=KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+            flutter build appbundle
           fi
 
       # ---- Verifikasi tanda tangan APK ------------------------------------

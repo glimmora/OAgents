@@ -25,3 +25,4 @@ proot
 
 # CI
 coverage/
+android/app/keystore.jks

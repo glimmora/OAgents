@@ -72,7 +72,7 @@ void main() {
   });
 
   group('PermissionRequest — keputusan & kesetaraan', () {
-    test('decided null lalu diisi true/false oleh controller', () {
+    test('decided null default; copy ber-decided true lewat konstruktor', () {
       final r = PermissionRequest(
         requestId: 'r-1',
         tool: 'bash',
@@ -80,8 +80,15 @@ void main() {
         sessionId: 's-1',
       );
       expect(r.decided, isNull);
-      r.decided = true;
-      expect(r.decided, isTrue);
+      final r2 = PermissionRequest(
+        requestId: r.requestId,
+        tool: r.tool,
+        summary: r.summary,
+        sessionId: r.sessionId,
+        decided: true,
+      );
+      expect(r2.decided, isTrue);
+      expect(r2, equals(r)); // kesetaraan tetap berbasis requestId
     });
 
     test('kesetaraan berdasar requestId (dua objek berbeda tetap ==)', () {

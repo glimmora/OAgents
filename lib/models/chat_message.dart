@@ -36,6 +36,7 @@ class PermissionRequest {
     required this.tool,
     required this.summary,
     required this.sessionId,
+    this.decided,
   });
 
   final String requestId;
@@ -46,10 +47,14 @@ class PermissionRequest {
   final String sessionId;
 
   /// `null` = belum diputuskan, `true` = disetujuji, `false` = ditolak.
+<<<<<<< HEAD
   /// Mutable secara sadar: diputuskan satu kali dari kartu izin inline,
   /// karenanya constructor tidak const dan kelas tidak dipakai sebagai nilai
   /// konst di UI.
   bool? decided;
+=======
+  final bool? decided;
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 
   @override
   bool operator ==(Object other) =>

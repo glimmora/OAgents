@@ -111,9 +111,16 @@ void main() {
     await tester.enterText(find.byType(TextField), 'pesan percobaan');
     await tester.pump();
     expect(find.widgetWithText(TextField, 'pesan percobaan'), findsOneWidget);
+<<<<<<< HEAD
     // enabled null berarti aktif secara default (bukan disabled).
     expect(
         tester.widget<TextField>(find.byType(TextField)).enabled, isNot(false));
+=======
+    // enabled == null berarti mengikuti default (aktif); hanya false yang
+    // berarti nonaktif.
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled,
+        isNot(equals(false)));
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
   });
 
   testWidgets('tekan tombol kirim memanggil sendPrompt controller',

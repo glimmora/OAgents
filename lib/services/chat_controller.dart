@@ -449,7 +449,19 @@ class ChatController extends ChangeNotifier {
 
   /// Keputusan pengguna dari kartu izin inline.
   Future<void> decidePermission(PermissionRequest request, bool allowed) async {
-    request.decided = allowed;
+    // Immutable update: ganti objek lama di daftar dengan versi ber-decided
+    // supaya UI (kartu) membangun ulang state tanpa mutasi tersembunyi.
+    final updated = PermissionRequest(
+      requestId: request.requestId,
+      tool: request.tool,
+      summary: request.summary,
+      sessionId: request.sessionId,
+      decided: allowed,
+    );
+    final idx = _permissions.indexOf(request);
+    if (idx >= 0) {
+      _permissions[idx] = updated;
+    }
     notifyListeners();
     final res = await client.decidePermission(
       sessionId: request.sessionId,

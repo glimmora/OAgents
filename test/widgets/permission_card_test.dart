@@ -7,11 +7,12 @@ import 'package:oagents/widgets/permission_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-PermissionRequest _req() => PermissionRequest(
+PermissionRequest _req({bool? decided}) => PermissionRequest(
       requestId: 'p-77',
       tool: 'write',
       summary: 'ubah lib/main.dart',
       sessionId: 's-9',
+      decided: decided,
     );
 
 void main() {
@@ -42,7 +43,7 @@ void main() {
 
   testWidgets('kartu setelah diputuskan false menampilkan teks Ditolak',
       (tester) async {
-    final r = _req()..decided = false;
+    final r = _req(decided: false);
     await tester.pumpWidget(_wrap(PermissionCard(request: r)));
     expect(find.textContaining('Ditolak'), findsOneWidget);
     expect(find.text('Setuju'), findsNothing);
@@ -61,8 +62,13 @@ void main() {
     await tester.tap(find.text('Tolak'));
     await tester.pump();
     expect(n, 2);
+<<<<<<< HEAD
     // Kontrak UI: tanpa SnackBar. (ScaffoldMessenger memang selalu ada
     // di MaterialApp — keberadaannya bukan berarti SnackBar tampil.)
+=======
+    // SnackBar tidak boleh muncul (kontrak tanpa popup). ScaffoldMessenger
+    // selalu ada di dalam MaterialApp (built-in) — bukan indikator popup.
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     expect(find.byType(SnackBar), findsNothing);
   });
 }

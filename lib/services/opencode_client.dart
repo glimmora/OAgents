@@ -10,16 +10,27 @@ import 'package:oagents/services/sse_parser.dart';
 ///
 /// Metode tipis tanpa logika provider: tidak ada URL/model/api-key di sini.
 class OpencodeClient {
+<<<<<<< HEAD
   OpencodeClient({
     required this.bridge,
     this.followRetryDelay = const Duration(seconds: 2),
   });
+=======
+  OpencodeClient({required this.bridge, this.followRetryDelay});
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 
   final RuntimeBridge bridge;
 
   /// Jeda polling ulang `followLog` bila proxy memutus aliran SSE.
+<<<<<<< HEAD
   /// Dapat disuntik pengujian agar tidak menunggu jeda nyata.
   final Duration followRetryDelay;
+=======
+  /// Bisa di-inject supaya test cepat; default 2 detik.
+  final Duration? followRetryDelay;
+
+  Duration get _retryDelay => followRetryDelay ?? const Duration(seconds: 2);
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 
   // ------------------------------------------------------------ dasar
 
@@ -45,8 +56,13 @@ class OpencodeClient {
   /// `POST /api/session` — buat sesi baru, mengembalikan `{sessionID}`.
   Future<ApiResult<String>> createSession() async {
     final res = await _fetchJson('POST', '/api/session');
+<<<<<<< HEAD
     if (res is ApiErr) {
       return ApiErr(res.message, code: res.code, fallback: '');
+=======
+    if (res is ApiErr<dynamic>) {
+      return ApiErr<String>(res.message, code: res.code, fallback: '');
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     }
     final value = res is ApiOk ? res.value : null;
     if (value is! Map) {
@@ -174,13 +190,13 @@ class OpencodeClient {
         res = await bridge.httpProxy(method: 'GET', path: path.toString());
       } on BridgeException catch (e) {
         onRetry?.call(e.message);
-        await Future<void>.delayed(followRetryDelay);
+        await Future<void>.delayed(_retryDelay);
         continue;
       }
       if (res.status == 404) return; // sesi hilang — berhenti mengikuti.
       if (res.status >= 500) {
         onRetry?.call('Server galat ${res.status}, mencoba ulang…');
-        await Future<void>.delayed(followRetryDelay);
+        await Future<void>.delayed(_retryDelay);
         continue;
       }
       final events = <Map<String, dynamic>>[];
@@ -193,7 +209,7 @@ class OpencodeClient {
         yield map;
       }
       // Body habis = aliran terputus → jeda lalu sambung lagi.
-      await Future<void>.delayed(followRetryDelay);
+      await Future<void>.delayed(_retryDelay);
     }
   }
 

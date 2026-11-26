@@ -75,10 +75,18 @@ class RuntimeBridge {
       if (workDir != null) 'workDir': workDir,
     });
     final map = _ensureMap(raw);
+<<<<<<< HEAD
     // Kontrak bridge aturan 4: kegagalan dikembalikan {ok:false, error}
     // sebagai hasil normal — bukan PlatformException.
     if (map['ok'] == false) {
       throw BridgeException(map['error']?.toString() ?? 'startServer gagal');
+=======
+    // Kontrak bridge: {ok:false, error} berarti proot/opencode gagal mulai
+    // — lempar supaya pemanggil menampilkan kartu status galat.
+    if (map['ok'] == false) {
+      throw BridgeException(
+          map['error']?.toString() ?? 'startServer gagal tanpa pesan galat.');
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     }
     return ServerStatus.fromJson(map);
   }

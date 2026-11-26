@@ -3,7 +3,10 @@
 // FakeBridge meniru seluruh kanal `oagents/runtime` tanpa rootfs/proot
 // nyata: rootfs terpasang, server siap, sesi "s1", prompt → teks "Halo"
 // mengalir per 100 ms sebagai event SSE session.execution.partial.
+<<<<<<< HEAD
 
+=======
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +22,10 @@ const _fakeMode = bool.fromEnvironment('E2E_FAKE_BRIDGE');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+<<<<<<< HEAD
+=======
+  // Tak ada konfigurasi binding khusus — default aman untuk e2e.
+>>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 
   setUpAll(() {
     if (_fakeMode) {

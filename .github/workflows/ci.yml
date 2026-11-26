@@ -239,11 +239,13 @@ jobs:
       - name: Jalankan integration test di emulator (API 35 arm64)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          # API 34 + RAM kecil: runner tanpa KVM memakai -accel off,
+          # image ringan memperbesar peluang boot dalam batas waktu.
+          api-level: 34
           arch: x86_64
           target: google_apis
           profile: pixel
-          emulator-boot-timeout: 300
+          emulator-boot-timeout: 600
           script: |
             adb install -r app-debug.apk
             flutter test integration_test/app_e2e_test.dart -d emulator --dart-define=E2E_FAKE_BRIDGE=true

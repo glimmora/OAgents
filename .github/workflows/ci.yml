@@ -236,7 +236,11 @@ jobs:
 
       # e2e memakai bridge palsu (E2E_FAKE_BRIDGE=true) — tanpa rootfs asli
       # dan tanpa proot asli, lihat integration_test/app_e2e_test.dart.
-      - name: Jalankan integration test di emulator (API 35 arm64)
+      # ANDROID_I_WANT_MY_TCG: runner tanpa KVM membuat action menambah
+      # -accel off; emulator 37.x menolak software emulation tanpa flag ini.
+      - name: Jalankan integration test di emulator (API 34 x64, TCG)
+        env:
+          ANDROID_I_WANT_MY_TCG: 'yes'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           # API 34 + RAM kecil: runner tanpa KVM memakai -accel off,

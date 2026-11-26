@@ -11,6 +11,7 @@ Future<void> main() async {
   await driver.waitUntilFirstFrameRasterized();
   final String result = await driver.requestData('integration-test-done',
       timeout: const Duration(minutes: 60));
+  // ignore: avoid_print — driver CLI flutter drive memang keluaran stdout.
   print('Hasil integration test: $result');
   await driver.close();
 }

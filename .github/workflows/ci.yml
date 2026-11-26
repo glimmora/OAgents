@@ -229,6 +229,21 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      # flutter_tools 3.24.5 hardcode timeout 5 DETIK untuk koneksi VM Service
+      # (packages/flutter_tools/lib/src/test/integration_test_device.dart →
+      # connectToVmService(...).timeout(const Duration(seconds: 5))). Di
+      # emulator TCG tanpa KVM, handshake WebSocket sering > 5 detik sehingga
+      # e2e selalu gagal pada "Connecting to the VM Service timed out" sebelum
+      # satu test pun berjalan. Patch ke 10 menit lalu buang snapshot tool
+      # supaya flutter mengompilasi ulang dari source yang sudah dipatch.
+      - name: Perpanjang timeout VM Service flutter_tools (5 dtk → 10 mnt)
+        run: |
+          FD="${FLUTTER_ROOT:-$(dirname "$(dirname "$(which flutter)")")}"
+          ITD="$FD/packages/flutter_tools/lib/src/test/integration_test_device.dart"
+          sed -i 's/const Duration(seconds: 5),/const Duration(minutes: 10),/' "$ITD"
+          grep -q "Duration(minutes: 10)" "$ITD" || { echo "Patch VM timeout gagal — berhenti."; exit 1; }
+          rm -f "$FD/bin/cache/flutter_tools.snapshot" "$FD/bin/cache/flutter_tools.stamp"
+
       - name: Unduh APK debug
         uses: actions/download-artifact@v4
         with:

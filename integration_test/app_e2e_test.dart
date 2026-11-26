@@ -5,6 +5,7 @@
 // mengalir per 100 ms sebagai event SSE session.execution.partial.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_driver/driver_extension.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -17,6 +18,13 @@ import 'package:oagents/services/runtime_bridge.dart';
 const _fakeMode = bool.fromEnvironment('E2E_FAKE_BRIDGE');
 
 void main() {
+  // flutter drive: extension wajib ter-registrasi SEBELUM binding lain
+  // supaya VMServiceFlutterDriver.connect() → GetHealth berhasil.
+  enableFlutterDriverExtension(handler: (data) async {
+    // Driver meminta 'integration-test-done' setelah frame pertama; test
+    // berjalan di app-isolate sendiri lewat IntegrationTest binding.
+    return _fakeMode ? 'fake-bridge-ok' : 'real-bridge-ok';
+  });
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {

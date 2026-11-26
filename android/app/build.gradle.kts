@@ -66,8 +66,9 @@ flutter {
 }
 
 dependencies {
-    // Kotlin stdlib saja + org.json (bundel Android) — tanpa library eksternal.
-    // Tidak ada implementasi tambahan (kontrak BRIDGE_CONTRACT.md).
+    // Kotlin stdlib + org.json (bundel Android) — tanpa library eksternal
+    // (kontrak BRIDGE_CONTRACT.md). io.flutter.embedding datang dari
+    // subproject plugin via flutter-plugin-loader di settings.gradle.kts.
 }
 
 // KGP modern: compilerOptions DSL — kotlinOptions(String) kini error

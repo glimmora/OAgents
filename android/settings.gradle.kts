@@ -17,6 +17,11 @@ pluginManagement {
 }
 
 plugins {
+    // Loader WAJIB: Settings plugin yang membaca .flutter-plugins-dependencies
+    // dan membuat subproject untuk tiap plugin pubspec — dari situlah app
+    // menerima io.flutter.embedding (flutter.groovy hanya menambahkan embedding
+    // ke app bila daftar plugin kosong).
+    id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
     id("org.jetbrains.kotlin.android") version "1.9.24" apply false
     id("com.android.application") version "8.7.3" apply false

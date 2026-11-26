@@ -67,7 +67,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     'sesi: ${_shortId(controller.sessionId!)}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: scheme.onSurface.withValues(alpha: 0.6),
+                      color: scheme.onSurface.withOpacity(0.6),
                     ),
                   ),
           ),
@@ -129,10 +129,10 @@ class _EmptyChatView extends StatelessWidget {
             title: sessionId == null ? 'Belum ada sesi' : 'Sesi siap',
             detail: sessionId == null
                 ? 'Kirim pesan pertama untuk membuat sesi baru di server '
-                      'opencode. Pastikan runtime sudah terpasang dan server '
-                      'berjalan di tab Runtime.'
+                    'opencode. Pastikan runtime sudah terpasang dan server '
+                    'berjalan di tab Runtime.'
                 : 'Belum ada pesan pada sesi ini. Ketik di bawah untuk '
-                      'mulai berbicara dengan agent.',
+                    'mulai berbicara dengan agent.',
             icon: 'chat',
           ),
         ],
@@ -177,7 +177,7 @@ class _MessageTile extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isUser
-              ? scheme.primary.withValues(alpha: 0.18)
+              ? scheme.primary.withOpacity(0.18)
               : scheme.surfaceContainerLow,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(14),
@@ -201,7 +201,7 @@ class _MessageTile extends StatelessWidget {
             if (message.text.isEmpty && message.pending)
               Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 14,
                     height: 14,
                     child: CircularProgressIndicator(strokeWidth: 2),
@@ -210,7 +210,7 @@ class _MessageTile extends StatelessWidget {
                   Text(
                     'agent sedang berpikir…',
                     style: TextStyle(
-                      color: scheme.onSurface.withValues(alpha: 0.6),
+                      color: scheme.onSurface.withOpacity(0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -247,7 +247,7 @@ class _ToolCallRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: scheme.surfaceContainerHighest.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -260,11 +260,11 @@ class _ToolCallRow extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              call.running ? '${call.tool}: ${call.input}' : '${call.tool}',
+              call.running ? '${call.tool}: ${call.input}' : call.tool,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: scheme.onSurface.withValues(alpha: 0.8),
+                color: scheme.onSurface.withOpacity(0.8),
                 fontFamily: 'monospace',
                 fontSize: 12,
               ),

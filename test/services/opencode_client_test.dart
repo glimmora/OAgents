@@ -4,6 +4,8 @@
 // RuntimeBridge dipakai sebagai superclass konkret oleh OpencodeClient, jadi
 // FakeRuntimeBridge menimpa httpProxy (satu-satunya metode jaringan yang
 // dipakai klien) dan urlJoin / startServer bila diperlukan.
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oagents/models/api_result.dart';
 import 'package:oagents/models/session_summary.dart';
@@ -44,7 +46,11 @@ void main() {
 
   setUp(() {
     bridge = FakeRuntimeBridge();
-    client = OpencodeClient(bridge: bridge);
+    // Jeda retry nol supaya test followLog tidak menunggu 2 detik nyata.
+    client = OpencodeClient(
+      bridge: bridge,
+      followRetryDelay: const Duration(milliseconds: 1),
+    );
   });
 
   group('OpencodeClient — getInfo (GET /api/info)', () {
@@ -56,7 +62,8 @@ void main() {
       expect(bridge.calls.single, ('GET', '/api/info', null));
     });
 
-    test('respons non-objek (array) menjadi ApiErr dengan fallback kosong', () async {
+    test('respons non-objek (array) menjadi ApiErr dengan fallback kosong',
+        () async {
       bridge.queue.add(ok('[1,2,3]'));
       final res = await client.getInfo();
       expect(res, isA<ApiErr<Map<String, dynamic>>>());
@@ -233,10 +240,10 @@ void main() {
       final events = <Map<String, dynamic>>[];
       // Hentikan stream setelah event pertama supaya loop tak berjalan abadi.
       final sub = client.followLog('s1', onRetry: (d) {}).listen(events.add);
-      while (events.length < 1) {
+      while (events.isEmpty) {
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
-      await sub.cancel();
+      unawaited(sub.cancel());
       expect(events.first['event'], 'session.execution.partial');
       expect(events.first['json']['delta'], 'Ha');
       // Permintaan kedua membawa kursor setelah event seq 42.
@@ -247,7 +254,7 @@ void main() {
       bridge.queue.add(ok('data: kosong\n\n'));
       final sub = client.followLog('abc').listen((_) {});
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      await sub.cancel();
+      unawaited(sub.cancel());
       expect(
         bridge.calls.first.$2,
         '/api/session/abc/log?follow=true',
@@ -301,15 +308,15 @@ void main() {
         ..add(ok(sse));
       final retryDetails = <String>[];
       final events = <Map<String, dynamic>>[];
-      final sub = client
-          .followLog('s5', onRetry: retryDetails.add)
-          .listen(events.add);
-      while (events.length < 1) {
+      final sub =
+          client.followLog('s5', onRetry: retryDetails.add).listen(events.add);
+      while (events.isEmpty) {
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
-      await sub.cancel();
+      unawaited(sub.cancel());
       expect(events, isNotEmpty);
-      expect(retryDetails.where((d) => d.contains('500')).length, greaterThanOrEqualTo(1));
+      expect(retryDetails.where((d) => d.contains('500')).length,
+          greaterThanOrEqualTo(1));
     });
   });
 }

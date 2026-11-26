@@ -16,19 +16,20 @@ typedef _Handler = (String, Map<String, dynamic>, Object? Function()?);
 void _mockBridge(List<_Handler> handlers) {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(const MethodChannel('oagents/runtime'), (
-        MethodCall call,
-      ) async {
-        for (final h in handlers) {
-          if (call.method == h.$1) {
-            final args = call.arguments as Map<Object?, Object?>? ?? {};
-            for (final e in h.$2.entries) {
-              expect(args[e.key], e.value, reason: 'argumen ${e.key} salah');
-            }
-            return h.$3 == null ? null : h.$3();
-          }
+    MethodCall call,
+  ) async {
+    for (final h in handlers) {
+      if (call.method == h.$1) {
+        final args = call.arguments as Map<Object?, Object?>? ?? {};
+        for (final e in h.$2.entries) {
+          expect(args[e.key], e.value, reason: 'argumen ${e.key} salah');
         }
-        fail('Metode native tidak terdaftar di mock: ${call.method}');
-      });
+        final build = h.$3;
+        return build == null ? null : build();
+      }
+    }
+    fail('Metode native tidak terdaftar di mock: ${call.method}');
+  });
 }
 
 void main() {
@@ -48,12 +49,16 @@ void main() {
   group('RuntimeBridge — rootfsStatus', () {
     test('installed true terparse lengkap dari JSON', () async {
       _mockBridge([
-        ('rootfsStatus', {}, () => <String, dynamic>{
-              'installed': true,
-              'version': '2.4.1',
-              'sizeMB': 78.5,
-              'ok': true,
-            }),
+        (
+          'rootfsStatus',
+          {},
+          () => <String, dynamic>{
+                'installed': true,
+                'version': '2.4.1',
+                'sizeMB': 78.5,
+                'ok': true,
+              }
+        ),
       ]);
       final s = await bridge.rootfsStatus();
       expect(s.installed, isTrue);
@@ -64,10 +69,14 @@ void main() {
 
     test('installed false default versi kosong & sizeMB nol', () async {
       _mockBridge([
-        ('rootfsStatus', {}, () => <String, dynamic>{
-              'installed': false,
-              'ok': true,
-            }),
+        (
+          'rootfsStatus',
+          {},
+          () => <String, dynamic>{
+                'installed': false,
+                'ok': true,
+              }
+        ),
       ]);
       final s = await bridge.rootfsStatus();
       expect(s.installed, isFalse);
@@ -79,10 +88,14 @@ void main() {
   group('RuntimeBridge — startServer', () {
     test('sukses {ok, pid, port} terparse ServerStatus running', () async {
       _mockBridge([
-        ('startServer', {
-          'port': RuntimeBridge.defaultPort,
-          'env': <String, String>{},
-        }, () => <String, dynamic>{'ok': true, 'pid': 1234, 'port': 4096}),
+        (
+          'startServer',
+          {
+            'port': RuntimeBridge.defaultPort,
+            'env': <String, String>{},
+          },
+          () => <String, dynamic>{'ok': true, 'pid': 1234, 'port': 4096}
+        ),
       ]);
       final s = await bridge.startServer();
       expect(s.running, isTrue);
@@ -92,11 +105,15 @@ void main() {
 
     test('argumen port, env, dan workDir diteruskan ke native', () async {
       _mockBridge([
-        ('startServer', {
-          'port': 5000,
-          'env': {'OPENCODE_OPENAI_API_KEY': 'k'},
-          'workDir': '/data/tmp',
-        }, () => <String, dynamic>{'ok': true, 'pid': 9, 'port': 5000}),
+        (
+          'startServer',
+          {
+            'port': 5000,
+            'env': {'OPENCODE_OPENAI_API_KEY': 'k'},
+            'workDir': '/data/tmp',
+          },
+          () => <String, dynamic>{'ok': true, 'pid': 9, 'port': 5000}
+        ),
       ]);
       final s = await bridge.startServer(
         port: 5000,
@@ -130,12 +147,16 @@ void main() {
   group('RuntimeBridge — serverStatus & stopServer', () {
     test('serverStatus running dengan pid/port/upMs', () async {
       _mockBridge([
-        ('serverStatus', {}, () => <String, dynamic>{
-              'running': true,
-              'pid': 77,
-              'port': 4096,
-              'upMs': 5400000,
-            }),
+        (
+          'serverStatus',
+          {},
+          () => <String, dynamic>{
+                'running': true,
+                'pid': 77,
+                'port': 4096,
+                'upMs': 5400000,
+              }
+        ),
       ]);
       final s = await bridge.serverStatus();
       expect(s.running, isTrue);
@@ -153,15 +174,19 @@ void main() {
   group('RuntimeBridge — execInRootfs', () {
     test('stdout, stderr, dan exitCode terparse', () async {
       _mockBridge([
-        ('execInRootfs', {
-          'cmd': 'uname -a',
-          'timeoutMs': 30000,
-        }, () => <String, dynamic>{
-              'ok': true,
-              'exitCode': 0,
-              'stdout': 'Linux localhost',
-              'stderr': '',
-            }),
+        (
+          'execInRootfs',
+          {
+            'cmd': 'uname -a',
+            'timeoutMs': 30000,
+          },
+          () => <String, dynamic>{
+                'ok': true,
+                'exitCode': 0,
+                'stdout': 'Linux localhost',
+                'stderr': '',
+              }
+        ),
       ]);
       final r = await bridge.execInRootfs('uname -a');
       expect(r.ok, isTrue);
@@ -172,15 +197,19 @@ void main() {
 
     test('perintah gagal exitCode 1 dengan stderr terisi', () async {
       _mockBridge([
-        ('execInRootfs', {
-          'cmd': 'ls /nonexistent',
-          'timeoutMs': 1000,
-        }, () => <String, dynamic>{
-              'ok': false,
-              'exitCode': 1,
-              'stdout': '',
-              'stderr': 'ls: /nonexistent: No such file or directory',
-            }),
+        (
+          'execInRootfs',
+          {
+            'cmd': 'ls /nonexistent',
+            'timeoutMs': 1000,
+          },
+          () => <String, dynamic>{
+                'ok': false,
+                'exitCode': 1,
+                'stdout': '',
+                'stderr': 'ls: /nonexistent: No such file or directory',
+              }
+        ),
       ]);
       final r = await bridge.execInRootfs('ls /nonexistent', timeoutMs: 1000);
       expect(r.ok, isFalse);
@@ -192,14 +221,18 @@ void main() {
   group('RuntimeBridge — httpProxy', () {
     test('status dan body JSON proxy terbaca utuh', () async {
       _mockBridge([
-        ('httpProxy', {
-          'method': 'GET',
-          'path': '/api/info',
-          'headers': {'Accept': 'application/json'},
-        }, () => <String, dynamic>{
-              'status': 200,
-              'body': '{"version":"2.4.1"}',
-            }),
+        (
+          'httpProxy',
+          {
+            'method': 'GET',
+            'path': '/api/info',
+            'headers': {'Accept': 'application/json'},
+          },
+          () => <String, dynamic>{
+                'status': 200,
+                'body': '{"version":"2.4.1"}',
+              }
+        ),
       ]);
       final r = await bridge.httpProxy(
         method: 'GET',
@@ -214,12 +247,16 @@ void main() {
     test('body JSON dengan header proxy + status non-2xx → isOk false',
         () async {
       _mockBridge([
-        ('httpProxy', {
-          'method': 'POST',
-          'path': '/api/session/x/permission',
-          'body': '{"allowed":false}',
-          'headers': {'Content-Type': 'application/json'},
-        }, () => <String, dynamic>{'status': 500, 'body': 'down'}),
+        (
+          'httpProxy',
+          {
+            'method': 'POST',
+            'path': '/api/session/x/permission',
+            'body': '{"allowed":false}',
+            'headers': {'Content-Type': 'application/json'},
+          },
+          () => <String, dynamic>{'status': 500, 'body': 'down'}
+        ),
       ]);
       final r = await bridge.httpProxy(
         method: 'POST',
@@ -273,4 +310,7 @@ class _FakeEventChannel implements EventChannel {
   @override
   BinaryMessenger get binaryMessenger =>
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+
+  @override
+  MethodCodec get codec => const StandardMethodCodec();
 }

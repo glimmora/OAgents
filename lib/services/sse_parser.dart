@@ -22,23 +22,37 @@ class SseParser {
   String? _lastEventId;
   String _eventType = 'message';
 
+  /// Sisa baris parsial dari chunk sebelumnya — jaringan dapat memotong di
+  /// tengah baris; baris baru diproses hanya bila terminatornya terlihat.
+  String _pending = '';
+
   /// Memasukkan satu potongan teks mentah (boleh sebagian baris, karena
   /// jaringan dapat memotong di tengah baris) dan mengeluarkan event
   /// selesai yang terkandung di dalamnya.
   void push(String chunk) {
     final normalized = chunk.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-    for (final line in normalized.split('\n')) {
+    final combined = _pending + normalized;
+    final lines = combined.split('\n');
+    // Elemen terakhir belum tentu baris utuh: bila combined tidak diakhiri
+    // terminator, elemen itu baris parsial — simpan untuk push berikutnya.
+    _pending = lines.removeLast();
+    for (final line in lines) {
       _handleLine(line);
     }
   }
 
   /// Memaksa event yang masih menumpuk keluar — dipanggil saat aliran tutup.
   void close() {
+    if (_pending.isNotEmpty) {
+      _handleLine(_pending);
+      _pending = '';
+    }
     if (_dataLines.isNotEmpty || _lastEventId != null) _emit();
   }
 
   /// State apakah ada event parsial yang menunggu baris kosong.
-  bool get hasBufferedEvent => _dataLines.isNotEmpty || _lastEventId != null;
+  bool get hasBufferedEvent =>
+      _pending.isNotEmpty || _dataLines.isNotEmpty || _lastEventId != null;
 
   void _handleLine(String line) {
     if (line.isEmpty) {
@@ -56,7 +70,13 @@ class SseParser {
     } else {
       field = line.substring(0, colon);
       value = line.substring(colon + 1);
-      if (value.startsWith(' ')) value = value.substring(1);
+      // Spasi langsung setelah titik dua dipangkas. Spesifikasi SSE hanya
+      // memangkas satu spasi, tetapi opencode menulis payload JSON dengan
+      // indentasi; memangkas semua spasi awal aman untuk nilai field kami
+      // (data/event/id) dan tidak menimpa spasi di tengah nilai.
+      while (value.startsWith(' ')) {
+        value = value.substring(1);
+      }
     }
 
     switch (field) {
@@ -89,6 +109,7 @@ class SseParser {
     onEvent(event);
     _dataLines.clear();
     _eventType = 'message';
+    _lastEventId = null;
   }
 }
 

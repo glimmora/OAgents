@@ -39,7 +39,7 @@ class StatusCard extends StatelessWidget {
       color: scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: color.withValues(alpha: 0.45), width: 1),
+        side: BorderSide(color: color.withOpacity(0.45), width: 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -75,7 +75,7 @@ class StatusCard extends StatelessWidget {
                 Text(
                   detail!,
                   style: TextStyle(
-                    color: scheme.onSurface.withValues(alpha: 0.75),
+                    color: scheme.onSurface.withOpacity(0.75),
                     fontSize: compact ? 12 : 13,
                     height: 1.35,
                   ),

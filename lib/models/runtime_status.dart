@@ -96,8 +96,11 @@ class ServerStatus {
   });
 
   factory ServerStatus.fromJson(Map<String, dynamic> json) {
+    // `serverStatus` mengirim `running`; `startServer` (kontrak bridge)
+    // mengirim `ok` — keduanya berarti server hidup.
+    final running = json['running'] == true || json['ok'] == true;
     return ServerStatus(
-      running: json['running'] == true,
+      running: running,
       pid: _asInt(json['pid']),
       port: _asInt(json['port']),
       upMs: _asInt(json['upMs']),

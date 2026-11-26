@@ -16,7 +16,8 @@ void main() {
         detail: 'Berjalan di 127.0.0.1:4096 (pid 1234).',
       )));
       expect(find.text('Server opencode'), findsOneWidget);
-      expect(find.text('Berjalan di 127.0.0.1:4096 (pid 1234).'), findsOneWidget);
+      expect(
+          find.text('Berjalan di 127.0.0.1:4096 (pid 1234).'), findsOneWidget);
     });
 
     testWidgets('progress non-null menampilkan LinearProgressIndicator',
@@ -56,7 +57,7 @@ void main() {
   });
 
   group('PermissionCard — keputusan izin tool', () {
-    PermissionRequest _req() => PermissionRequest(
+    PermissionRequest req() => PermissionRequest(
           requestId: 'r-1',
           tool: 'bash',
           summary: 'rm -rf /tmp/bersih',
@@ -64,16 +65,17 @@ void main() {
         );
 
     testWidgets('judul tool & ringkas perintah tampil', (tester) async {
-      await tester.pumpWidget(_wrap(PermissionCard(request: _req())));
+      await tester.pumpWidget(_wrap(PermissionCard(request: req())));
       expect(find.text('Izin tool: bash'), findsOneWidget);
       expect(find.text('rm -rf /tmp/bersih'), findsOneWidget);
       expect(find.textContaining('Agent ingin menjalankan'), findsOneWidget);
     });
 
-    testWidgets('tombol Setuju memanggil callback allowed=true', (tester) async {
+    testWidgets('tombol Setuju memanggil callback allowed=true',
+        (tester) async {
       final seen = <bool>[];
       await tester.pumpWidget(_wrap(PermissionCard(
-        request: _req(),
+        request: req(),
         onDecision: (r, allowed) => seen.add(allowed),
       )));
       await tester.tap(find.text('Setuju'));
@@ -82,10 +84,11 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
     });
 
-    testWidgets('tombol Tolak memanggil callback allowed=false', (tester) async {
+    testWidgets('tombol Tolak memanggil callback allowed=false',
+        (tester) async {
       final seen = <bool>[];
       await tester.pumpWidget(_wrap(PermissionCard(
-        request: _req(),
+        request: req(),
         onDecision: (r, allowed) => seen.add(allowed),
       )));
       await tester.tap(find.text('Tolak'));
@@ -96,9 +99,17 @@ void main() {
 
     testWidgets('tanpa callback: tombol nonaktif, tekan tidak melempar',
         (tester) async {
-      await tester.pumpWidget(_wrap(PermissionCard(request: _req())));
-      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-          isNull);
+      await tester.pumpWidget(_wrap(PermissionCard(request: req())));
+      // Tombol Setuju dibangun FilledButton.icon (subclass privat _FilledButtonWithIcon)
+      // — cari lewat widget leluhur ButtonStyleButton milik tombol berteck 'Setuju'.
+      final btn = find.ancestor(
+        of: find.text('Setuju'),
+        matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+      );
+      expect(
+        tester.widget<ButtonStyleButton>(btn).onPressed,
+        isNull,
+      );
       await tester.tap(find.text('Setuju'), warnIfMissed: false);
       await tester.pump();
       expect(find.byType(SnackBar), findsNothing);
@@ -106,7 +117,7 @@ void main() {
 
     testWidgets('sudah diputuskan → status "Disetujuji" tanpa tombol',
         (tester) async {
-      final r = _req()..decided = true;
+      final r = req()..decided = true;
       await tester.pumpWidget(_wrap(PermissionCard(request: r)));
       expect(find.text('Setuju'), findsNothing);
       expect(find.textContaining('Disetujuji'), findsOneWidget);

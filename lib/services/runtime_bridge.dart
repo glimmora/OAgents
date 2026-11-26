@@ -10,8 +10,8 @@ import 'package:oagents/services/credential_store.dart';
 /// kelas ini TIDAK PERNAH menampilkan popup notifikasi.
 class RuntimeBridge {
   RuntimeBridge({MethodChannel? methodChannel, EventChannel? eventChannel})
-    : _methods = methodChannel ?? const MethodChannel('oagents/runtime'),
-      _events = eventChannel ?? const EventChannel('oagents/progress');
+      : _methods = methodChannel ?? const MethodChannel('oagents/runtime'),
+        _events = eventChannel ?? const EventChannel('oagents/progress');
 
   final MethodChannel _methods;
   final EventChannel _events;
@@ -74,7 +74,13 @@ class RuntimeBridge {
       'env': env,
       if (workDir != null) 'workDir': workDir,
     });
-    return ServerStatus.fromJson(_ensureMap(raw));
+    final map = _ensureMap(raw);
+    // Kontrak bridge aturan 4: kegagalan dikembalikan {ok:false, error}
+    // sebagai hasil normal — bukan PlatformException.
+    if (map['ok'] == false) {
+      throw BridgeException(map['error']?.toString() ?? 'startServer gagal');
+    }
+    return ServerStatus.fromJson(map);
   }
 
   /// `stopServer` — SIGTERM pid tree proot.

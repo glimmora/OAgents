@@ -93,7 +93,8 @@ void main() {
       expect(out.single['data'], 'berjarak');
     });
 
-    test('baris field tanpa titik dua diperlakukan field kosong nilainya', () async {
+    test('baris field tanpa titik dua diperlakukan field kosong nilainya',
+        () async {
       final out = await pumpStream(['data\n', '\n']);
       expect(out.single['data'], '');
     });
@@ -149,7 +150,8 @@ void main() {
 
   group('SseParser — skenario opencode nyata', () {
     test('id numerik besar tetap string utuh (tanpa konversi int)', () async {
-      final out = await pumpStream(['id: 18446744073709551615\n', 'data: x\n', '\n']);
+      final out =
+          await pumpStream(['id: 18446744073709551615\n', 'data: x\n', '\n']);
       expect(out.single['id'], '18446744073709551615');
       expect(out.single['id'], isA<String>());
     });
@@ -191,7 +193,8 @@ void main() {
       expect(sseDataToJson('{"ok":true}'), {'ok': true});
     });
 
-    test('sseEventToMap menempelkan "json": null bila data bukan JSON objek', () {
+    test('sseEventToMap menempelkan "json": null bila data bukan JSON objek',
+        () {
       final map = sseEventToMap({'event': 'x', 'data': 'plain'});
       expect(map['json'], isNull);
       expect(map['event'], 'x');

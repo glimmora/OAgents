@@ -87,16 +87,16 @@ class OAgentsApp extends StatelessWidget {
       ),
       cardTheme: CardTheme(
         elevation: 0,
-        color: _primary.withValues(alpha: 1),
+        color: _primary.withOpacity(1),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: _primary.withValues(alpha: 0.95),
-        indicatorColor: _accent.withValues(alpha: 0.28),
+        backgroundColor: _primary.withOpacity(0.95),
+        indicatorColor: _accent.withOpacity(0.28),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           return IconThemeData(
             color: states.contains(WidgetState.selected)
                 ? _accent
-                : Colors.white.withValues(alpha: 0.55),
+                : Colors.white.withOpacity(0.55),
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -104,7 +104,7 @@ class OAgentsApp extends StatelessWidget {
             fontSize: 12,
             color: states.contains(WidgetState.selected)
                 ? _accent
-                : Colors.white.withValues(alpha: 0.55),
+                : Colors.white.withOpacity(0.55),
           );
         }),
       ),

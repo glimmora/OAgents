@@ -10,12 +10,16 @@ import 'package:oagents/services/sse_parser.dart';
 ///
 /// Metode tipis tanpa logika provider: tidak ada URL/model/api-key di sini.
 class OpencodeClient {
-  OpencodeClient({required this.bridge});
+  OpencodeClient({
+    required this.bridge,
+    this.followRetryDelay = const Duration(seconds: 2),
+  });
 
   final RuntimeBridge bridge;
 
   /// Jeda polling ulang `followLog` bila proxy memutus aliran SSE.
-  final Duration followRetryDelay = const Duration(seconds: 2);
+  /// Dapat disuntik pengujian agar tidak menunggu jeda nyata.
+  final Duration followRetryDelay;
 
   // ------------------------------------------------------------ dasar
 
@@ -25,14 +29,14 @@ class OpencodeClient {
     return switch (res) {
       ApiOk(:final value) when value is Map<String, dynamic> => ApiOk(value),
       ApiOk() => const ApiErr(
-        'Respons /api/info bukan objek JSON.',
-        fallback: <String, dynamic>{},
-      ),
+          'Respons /api/info bukan objek JSON.',
+          fallback: <String, dynamic>{},
+        ),
       ApiErr(:final message, :final code) => ApiErr(
-        message,
-        code: code,
-        fallback: const <String, dynamic>{},
-      ),
+          message,
+          code: code,
+          fallback: const <String, dynamic>{},
+        ),
     };
   }
 
@@ -41,16 +45,15 @@ class OpencodeClient {
   /// `POST /api/session` — buat sesi baru, mengembalikan `{sessionID}`.
   Future<ApiResult<String>> createSession() async {
     final res = await _fetchJson('POST', '/api/session');
-    if (res is ApiErr<dynamic> err) {
-      return ApiErr(err.message, code: err.code, fallback: '');
+    if (res is ApiErr) {
+      return ApiErr(res.message, code: res.code, fallback: '');
     }
-    final value = (res as ApiOk<dynamic>).value;
+    final value = res is ApiOk ? res.value : null;
     if (value is! Map) {
       return const ApiErr('Bentuk respons sesi tidak sesuai.', fallback: '');
     }
-    final id =
-        (value['sessionID'] ?? value['id'] ?? value['session_id'] ?? '')
-            .toString();
+    final id = (value['sessionID'] ?? value['id'] ?? value['session_id'] ?? '')
+        .toString();
     if (id.isEmpty) {
       return const ApiErr('Respons server tanpa sessionID.', fallback: '');
     }
@@ -63,10 +66,10 @@ class OpencodeClient {
     return switch (res) {
       ApiOk(:final value) => ApiOk(_parseSessionList(value)),
       ApiErr(:final message, :final code) => ApiErr(
-        message,
-        code: code,
-        fallback: const <SessionSummary>[],
-      ),
+          message,
+          code: code,
+          fallback: const <SessionSummary>[],
+        ),
     };
   }
 
@@ -93,10 +96,10 @@ class OpencodeClient {
     return switch (res) {
       ApiOk(:final value) => ApiOk(_parseMessageList(value)),
       ApiErr(:final message, :final code) => ApiErr(
-        message,
-        code: code,
-        fallback: const <Map<String, dynamic>>[],
-      ),
+          message,
+          code: code,
+          fallback: const <Map<String, dynamic>>[],
+        ),
     };
   }
 
@@ -109,7 +112,10 @@ class OpencodeClient {
       if (wrap is List) items = wrap;
     }
     if (items == null) return const [];
-    return [for (final it in items) if (it is Map) _mapOf(it)];
+    return [
+      for (final it in items)
+        if (it is Map) _mapOf(it)
+    ];
   }
 
   /// `POST /api/session/:id/prompt` — kirim prompt.
@@ -127,14 +133,14 @@ class OpencodeClient {
     return switch (res) {
       ApiOk(:final value) when value is Map<String, dynamic> => ApiOk(value),
       ApiOk() => const ApiErr(
-        'Bentuk respons prompt tidak sesuai.',
-        fallback: <String, dynamic>{},
-      ),
+          'Bentuk respons prompt tidak sesuai.',
+          fallback: <String, dynamic>{},
+        ),
       ApiErr(:final message, :final code) => ApiErr(
-        message,
-        code: code,
-        fallback: const <String, dynamic>{},
-      ),
+          message,
+          code: code,
+          fallback: const <String, dynamic>{},
+        ),
     };
   }
 
@@ -258,10 +264,10 @@ class OpencodeClient {
     return switch (res) {
       ApiOk(:final value) => ApiOk(_parseWrapList(value, wrapKey)),
       ApiErr(:final message, :final code) => ApiErr(
-        message,
-        code: code,
-        fallback: const <Map<String, dynamic>>[],
-      ),
+          message,
+          code: code,
+          fallback: const <Map<String, dynamic>>[],
+        ),
     };
   }
 
@@ -277,7 +283,10 @@ class OpencodeClient {
       if (wrap is List) items = wrap;
     }
     if (items == null) return const [];
-    return [for (final it in items) if (it is Map) _mapOf(it)];
+    return [
+      for (final it in items)
+        if (it is Map) _mapOf(it)
+    ];
   }
 
   // ------------------------------------------------------------ inti HTTP
@@ -346,9 +355,8 @@ class OpencodeClient {
       case 502:
         return 'Server gagal memuat skill (502).';
       default:
-        final snippet = res.body.length > 160
-            ? res.body.substring(0, 160)
-            : res.body;
+        final snippet =
+            res.body.length > 160 ? res.body.substring(0, 160) : res.body;
         return 'Galat HTTP ${res.status}: $snippet';
     }
   }

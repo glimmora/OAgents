@@ -27,9 +27,11 @@ class ToolCallView {
 }
 
 /// Permintaan izin tool yang harus diputuskan pengguna lewat kartu inline.
-@immutable
+/// `decided` mutable dengan sengaja (diputuskan satu kali dari UI), jadi
+/// kelas ini tidak const — dibuat per permintaan, tidak pernah nilai konst.
+// ignore: must_be_immutable
 class PermissionRequest {
-  const PermissionRequest({
+  PermissionRequest({
     required this.requestId,
     required this.tool,
     required this.summary,
@@ -44,6 +46,9 @@ class PermissionRequest {
   final String sessionId;
 
   /// `null` = belum diputuskan, `true` = disetujuji, `false` = ditolak.
+  /// Mutable secara sadar: diputuskan satu kali dari kartu izin inline,
+  /// karenanya constructor tidak const dan kelas tidak dipakai sebagai nilai
+  /// konst di UI.
   bool? decided;
 
   @override

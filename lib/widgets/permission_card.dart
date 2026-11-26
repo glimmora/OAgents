@@ -23,7 +23,7 @@ class PermissionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: const Color(0xFFE0B25A).withValues(alpha: 0.5),
+          color: const Color(0xFFE0B25A).withOpacity(0.5),
         ),
       ),
       child: Padding(
@@ -57,7 +57,7 @@ class PermissionCard extends StatelessWidget {
             Text(
               'Agent ingin menjalankan perintah berikut:',
               style: TextStyle(
-                color: scheme.onSurface.withValues(alpha: 0.7),
+                color: scheme.onSurface.withOpacity(0.7),
                 fontSize: 12,
               ),
             ),
@@ -66,7 +66,7 @@ class PermissionCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                color: scheme.surfaceContainerHighest.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -87,10 +87,9 @@ class PermissionCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed:
-                          onDecision == null
-                              ? null
-                              : () => onDecision!(request, true),
+                      onPressed: onDecision == null
+                          ? null
+                          : () => onDecision!(request, true),
                       icon: const Icon(Icons.check, size: 18),
                       label: const Text('Setuju'),
                     ),
@@ -98,10 +97,9 @@ class PermissionCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed:
-                          onDecision == null
-                              ? null
-                              : () => onDecision!(request, false),
+                      onPressed: onDecision == null
+                          ? null
+                          : () => onDecision!(request, false),
                       icon: const Icon(Icons.block, size: 18),
                       label: const Text('Tolak'),
                     ),
@@ -123,7 +121,7 @@ class PermissionCard extends StatelessWidget {
                           ? 'Disetujuji — menunggu eksekusi lanjut.'
                           : 'Ditolak — eksekusi tool dibatalkan.',
                       style: TextStyle(
-                        color: scheme.onSurface.withValues(alpha: 0.75),
+                        color: scheme.onSurface.withOpacity(0.75),
                         fontSize: 13,
                       ),
                     ),

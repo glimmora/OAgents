@@ -58,7 +58,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final controller = context.watch<ChatController>();
     return Scaffold(
       appBar: AppBar(
@@ -97,7 +96,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                 tone: StatusTone.error,
               )
             else if (_sessions.isEmpty)
-              StatusCard(
+              const StatusCard(
                 title: 'Belum ada sesi',
                 detail: 'Daftar kosong. Kirim pesan pertama di tab Chat untuk '
                     'membuat sesi baru.',
@@ -134,13 +133,12 @@ class _SessionTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       color: active
-          ? scheme.primary.withValues(alpha: 0.14)
+          ? scheme.primary.withOpacity(0.14)
           : scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: active ? scheme.primary.withValues(alpha: 0.6) : Colors
-              .transparent,
+          color: active ? scheme.primary.withOpacity(0.6) : Colors.transparent,
         ),
       ),
       child: InkWell(
@@ -163,7 +161,7 @@ class _SessionTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
-              color: scheme.onSurface.withValues(alpha: 0.6),
+              color: scheme.onSurface.withOpacity(0.6),
             ),
           ),
           trailing: active

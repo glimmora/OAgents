@@ -56,7 +56,7 @@ jobs:
         run: flutter pub get
 
       - name: Cek format (gagal bila belum rapi)
-        run: dart format --set=false --output=none --exit-code .
+        run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze (info fatal)
         run: flutter analyze --fatal-infos
@@ -104,7 +104,7 @@ jobs:
         run: flutter pub get
 
       - name: Cek format (gagal bila belum rapi)
-        run: dart format --set=false --output=none --exit-code .
+        run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze (info fatal)
         run: flutter analyze --fatal-infos

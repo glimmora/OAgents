@@ -167,7 +167,8 @@ class _RuntimeScreenState extends State<RuntimeScreen> {
     try {
       final ok = await _bridge.stopServer();
       _logAdd(ok ? 'Server dihentikan.' : 'Server melaporkan gagal berhenti.');
-      setState(() => _detail = ok ? 'Server dihentikan.' : 'Gagal menghentikan.');
+      setState(
+          () => _detail = ok ? 'Server dihentikan.' : 'Gagal menghentikan.');
     } on BridgeException catch (e) {
       _logAdd('Galat: ${e.message}');
       setState(() => _error = e.message);
@@ -200,11 +201,9 @@ class _RuntimeScreenState extends State<RuntimeScreen> {
             detail: rootfs == null
                 ? 'Memeriksa status pemasangan…'
                 : rootfs.installed
-                    ? 'Terpasang — opencode ${rootfs.version.isEmpty
-                        ? '(versi terkunci)'
-                        : rootfs.version}, ${rootfs.sizeMB.toStringAsFixed(0)} MB.'
+                    ? 'Terpasang — opencode ${rootfs.version.isEmpty ? '(versi terkunci)' : rootfs.version}, ${rootfs.sizeMB.toStringAsFixed(0)} MB.'
                     : 'Belum terpasang. Tekan "Pasang Lingkungan" untuk '
-                          'mengunduh & memasang rootfs Alpine + opencode.',
+                        'mengunduh & memasang rootfs Alpine + opencode.',
             icon: 'runtime',
             progress: installing ? _pct : null,
           ),
@@ -226,9 +225,9 @@ class _RuntimeScreenState extends State<RuntimeScreen> {
                 ? 'Memeriksa status server…'
                 : server.running
                     ? 'Berjalan di 127.0.0.1:${server.port} (pid '
-                          '${server.pid}) — hidup ${server.uptimeLabel}.'
+                        '${server.pid}) — hidup ${server.uptimeLabel}.'
                     : 'Tidak berjalan. Tekan "Mulai Server" untuk '
-                          'menjalankan proot + opencode serve.',
+                        'menjalankan proot + opencode serve.',
             icon: 'server',
             tone: (server?.running ?? false) ? StatusTone.ok : StatusTone.warn,
           ),
@@ -262,9 +261,8 @@ class _RuntimeScreenState extends State<RuntimeScreen> {
                   label: const Text('Mulai Server'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _busy || !(server?.running ?? false)
-                      ? null
-                      : _stopServer,
+                  onPressed:
+                      _busy || !(server?.running ?? false) ? null : _stopServer,
                   icon: const Icon(Icons.stop, size: 18),
                   label: const Text('Hentikan'),
                 ),
@@ -317,7 +315,7 @@ class _LogCard extends StatelessWidget {
               height: 180,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                color: scheme.surfaceContainerHighest.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: log.isEmpty
@@ -326,7 +324,7 @@ class _LogCard extends StatelessWidget {
                         'Belum ada aktivitas runtime.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: scheme.onSurface.withValues(alpha: 0.5),
+                          color: scheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                     )
@@ -337,7 +335,7 @@ class _LogCard extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 11,
-                          color: scheme.onSurface.withValues(alpha: 0.8),
+                          color: scheme.onSurface.withOpacity(0.8),
                           height: 1.5,
                         ),
                       ),

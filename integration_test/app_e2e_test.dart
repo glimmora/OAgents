@@ -3,7 +3,6 @@
 // FakeBridge meniru seluruh kanal `oagents/runtime` tanpa rootfs/proot
 // nyata: rootfs terpasang, server siap, sesi "s1", prompt → teks "Halo"
 // mengalir per 100 ms sebagai event SSE session.execution.partial.
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,8 +18,7 @@ import 'package:oagents/services/runtime_bridge.dart';
 const _fakeMode = bool.fromEnvironment('E2E_FAKE_BRIDGE');
 
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  binding.delayedIntegerValue = 1; // tak dipakai; jaga default aman.
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
     if (_fakeMode) {
@@ -55,7 +53,8 @@ void main() {
 
   testWidgets('e2e: sesi "s1" tersambung dan daftar sesi menampilkan status',
       (tester) async {
-    final controller = ChatController(client: OpencodeClient(bridge: RuntimeBridge()));
+    final controller =
+        ChatController(client: OpencodeClient(bridge: RuntimeBridge()));
     expect(controller.sessionId, isNull); // controller baru tidak dipakai UI
     app.main();
     await tester.pumpAndSettle(const Duration(seconds: 3));
@@ -69,40 +68,40 @@ void main() {
 void _installFakeNativeChannels() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(const MethodChannel('oagents/runtime'), (
-        MethodCall call,
-      ) async {
-        switch (call.method) {
-          case 'rootfsStatus':
-            return <String, dynamic>{
-              'installed': true,
-              'version': '2.4.1',
-              'sizeMB': 78,
-              'ok': true,
-            };
-          case 'serverStatus':
-            return <String, dynamic>{
-              'running': true,
-              'pid': 4321,
-              'port': 4096,
-              'upMs': 9000,
-            };
-          case 'startServer':
-            return <String, dynamic>{'ok': true, 'pid': 4321, 'port': 4096};
-          case 'stopServer':
-            return <String, dynamic>{'ok': true};
-          case 'httpProxy':
-            return _fakeHttp(call);
-          case 'execInRootfs':
-            return <String, dynamic>{
-              'ok': true,
-              'exitCode': 0,
-              'stdout': '',
-              'stderr': '',
-            };
-          default:
-            return <String, dynamic>{'ok': false, 'error': 'belum ada di fake'};
-        }
-      });
+    MethodCall call,
+  ) async {
+    switch (call.method) {
+      case 'rootfsStatus':
+        return <String, dynamic>{
+          'installed': true,
+          'version': '2.4.1',
+          'sizeMB': 78,
+          'ok': true,
+        };
+      case 'serverStatus':
+        return <String, dynamic>{
+          'running': true,
+          'pid': 4321,
+          'port': 4096,
+          'upMs': 9000,
+        };
+      case 'startServer':
+        return <String, dynamic>{'ok': true, 'pid': 4321, 'port': 4096};
+      case 'stopServer':
+        return <String, dynamic>{'ok': true};
+      case 'httpProxy':
+        return _fakeHttp(call);
+      case 'execInRootfs':
+        return <String, dynamic>{
+          'ok': true,
+          'exitCode': 0,
+          'stdout': '',
+          'stderr': '',
+        };
+      default:
+        return <String, dynamic>{'ok': false, 'error': 'belum ada di fake'};
+    }
+  });
 }
 
 dynamic _fakeHttp(MethodCall call) {
@@ -125,8 +124,7 @@ dynamic _fakeHttp(MethodCall call) {
   }
   if (path.contains('/log')) {
     // SSE: teks "Halo" dikirim bertahap (dipicu timer cepat 100 ms).
-    final sse =
-        'event: session.execution.partial\ndata: {"delta":"Halo"}\n\n';
+    final sse = 'event: session.execution.partial\ndata: {"delta":"Halo"}\n\n';
     return <String, dynamic>{'status': 200, 'body': sse};
   }
   if (path == '/api/session') {

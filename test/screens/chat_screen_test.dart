@@ -20,7 +20,8 @@ class _DummyBridge extends RuntimeBridge {
     required String path,
     Map<String, String> headers = const {},
     String? body,
-  }) async => const ProxyResponse(status: 500, body: '{}');
+  }) async =>
+      const ProxyResponse(status: 500, body: '{}');
 }
 
 /// Fake ChatController: meng-override antarmuka yang dibaca ChatScreen
@@ -37,7 +38,7 @@ class _FakeController extends ChatController {
 
   final List<ChatMessage> _msgs = <ChatMessage>[];
   String? _sessionId;
-  bool _sending = false;
+  final bool _sending = false;
   int sendCalls = 0;
   final List<(String, bool)> decisions = <(String, bool)>[];
 
@@ -50,6 +51,7 @@ class _FakeController extends ChatController {
   @override
   bool get sending => _sending;
 
+  @override
   void seed(ChatMessage m) {
     _msgs.add(m);
     notifyListeners();
@@ -84,11 +86,19 @@ void main() {
     controller = _FakeController();
   });
 
-  testWidgets('daftar pesan terrender: user, assistant, sistem', (tester) async {
+  testWidgets('daftar pesan terrender: user, assistant, sistem',
+      (tester) async {
     controller
-      ..seed(ChatMessage(role: ChatRole.user, text: 'Halo', timestamp: DateTime.now()))
-      ..seed(ChatMessage(role: ChatRole.assistant, text: 'Hai, apa kabar?', timestamp: DateTime.now()))
-      ..seed(ChatMessage(role: ChatRole.system, text: 'Sesi baru dibuat', timestamp: DateTime.now()));
+      ..seed(ChatMessage(
+          role: ChatRole.user, text: 'Halo', timestamp: DateTime.now()))
+      ..seed(ChatMessage(
+          role: ChatRole.assistant,
+          text: 'Hai, apa kabar?',
+          timestamp: DateTime.now()))
+      ..seed(ChatMessage(
+          role: ChatRole.system,
+          text: 'Sesi baru dibuat',
+          timestamp: DateTime.now()));
     await tester.pumpWidget(_app(controller));
     await tester.pump();
     expect(find.text('Halo'), findsOneWidget);
@@ -101,10 +111,13 @@ void main() {
     await tester.enterText(find.byType(TextField), 'pesan percobaan');
     await tester.pump();
     expect(find.widgetWithText(TextField, 'pesan percobaan'), findsOneWidget);
-    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    // enabled null berarti aktif secara default (bukan disabled).
+    expect(
+        tester.widget<TextField>(find.byType(TextField)).enabled, isNot(false));
   });
 
-  testWidgets('tekan tombol kirim memanggil sendPrompt controller', (tester) async {
+  testWidgets('tekan tombol kirim memanggil sendPrompt controller',
+      (tester) async {
     await tester.pumpWidget(_app(controller));
     await tester.enterText(find.byType(TextField), 'halo agent');
     await tester.tap(find.byIcon(Icons.send));
@@ -114,7 +127,8 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('pesan pending tanpa teks menampilkan indikator berpikir', (tester) async {
+  testWidgets('pesan pending tanpa teks menampilkan indikator berpikir',
+      (tester) async {
     controller.seed(ChatMessage(
       role: ChatRole.assistant,
       text: '',
@@ -141,7 +155,8 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('StatusCard muncul saat proses (pesan sistem pending = tahap berjalan)',
+  testWidgets(
+      'StatusCard muncul saat proses (pesan sistem pending = tahap berjalan)',
       (tester) async {
     controller.seed(ChatMessage(
       role: ChatRole.system,

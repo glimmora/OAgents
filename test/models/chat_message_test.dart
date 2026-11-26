@@ -49,7 +49,7 @@ void main() {
         text: 'kerja',
         timestamp: DateTime.now(),
       ).copyWith(
-        toolCalls: [ToolCallView(tool: 'bash', input: 'ls -la')],
+        toolCalls: [const ToolCallView(tool: 'bash', input: 'ls -la')],
       );
       expect(m.toolCalls, hasLength(1));
       expect(m.toolCalls.single.tool, 'bash');
@@ -104,7 +104,7 @@ void main() {
 
   group('ToolCallView — state berjalan & selesai', () {
     test('tool selesai membawa output dan running false', () {
-      final c = ToolCallView(
+      final c = const ToolCallView(
         tool: 'bash',
         input: 'echo hi',
         running: false,
@@ -117,7 +117,8 @@ void main() {
 
   group('ChatRole — seluruh nilai enum', () {
     test('tiga peran pengirim terdefinisi', () {
-      expect(ChatRole.values, containsAll([ChatRole.user, ChatRole.assistant, ChatRole.system]));
+      expect(ChatRole.values,
+          containsAll([ChatRole.user, ChatRole.assistant, ChatRole.system]));
     });
   });
 }

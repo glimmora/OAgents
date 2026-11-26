@@ -36,8 +36,7 @@ class ChatController extends ChangeNotifier {
   StreamSubscription<Map<String, dynamic>>? _logSub;
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
-  List<PermissionRequest> get permissions =>
-      List.unmodifiable(_permissions);
+  List<PermissionRequest> get permissions => List.unmodifiable(_permissions);
   String? get sessionId => _sessionId;
   bool get sending => _sending;
   bool get ready => _sessionId != null;
@@ -175,7 +174,8 @@ class ChatController extends ChangeNotifier {
     if (sessionId == null) return;
 
     _messages.add(
-      ChatMessage(role: ChatRole.user, text: trimmed, timestamp: DateTime.now()),
+      ChatMessage(
+          role: ChatRole.user, text: trimmed, timestamp: DateTime.now()),
     );
     _sending = true;
     notifyListeners();
@@ -246,7 +246,8 @@ class ChatController extends ChangeNotifier {
   void _onLogEvent(Map<String, dynamic> event) {
     final name = (event['event'] ?? '').toString();
     final json = event['json'];
-    final payload = json is Map<String, dynamic> ? json : const <String, dynamic>{};
+    final payload =
+        json is Map<String, dynamic> ? json : const <String, dynamic>{};
 
     if (name.startsWith('session.execution')) {
       _handleExecutionEvent(name, payload);
@@ -504,6 +505,13 @@ class ChatController extends ChangeNotifier {
   void clearMessages() {
     _messages.clear();
     _permissions.clear();
+    notifyListeners();
+  }
+
+  /// Menyuntik pesan ke daftar tanpa menyentuh jaringan — dipakai pengujian
+  /// untuk menyiapkan state UI (mis. kartu status, pesan streaming).
+  void seed(ChatMessage message) {
+    _messages.add(message);
     notifyListeners();
   }
 

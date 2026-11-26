@@ -61,7 +61,8 @@ void main() {
     await tester.tap(find.text('Tolak'));
     await tester.pump();
     expect(n, 2);
+    // Kontrak UI: tanpa SnackBar. (ScaffoldMessenger memang selalu ada
+    // di MaterialApp — keberadaannya bukan berarti SnackBar tampil.)
     expect(find.byType(SnackBar), findsNothing);
-    expect(find.byType(ScaffoldMessenger), findsNothing);
   });
 }

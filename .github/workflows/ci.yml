@@ -62,7 +62,7 @@ jobs:
         run: flutter analyze --fatal-infos
 
       - name: Unit test (shard 1/2)
-        run: flutter test --coverage --shard-index 0 --shard-total 2
+        run: flutter test --coverage --total-shards 2 --shard-index 0
 
       - name: Upload coverage (shard 1)
         uses: actions/upload-artifact@v4
@@ -110,7 +110,7 @@ jobs:
         run: flutter analyze --fatal-infos
 
       - name: Unit test (shard 2/2)
-        run: flutter test --coverage --shard-index 1 --shard-total 2
+        run: flutter test --coverage --total-shards 2 --shard-index 1
 
       - name: Upload coverage (shard 2)
         uses: actions/upload-artifact@v4

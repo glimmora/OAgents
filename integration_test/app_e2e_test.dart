@@ -25,6 +25,8 @@ void main() {
     }
   });
 
+  // Timeout eksplisit: default testWidgets 12 menit, sedangkan TCG (software
+  // rendering tanpa KVM) jauh lebih lambat — build+install saja ~9 menit.
   testWidgets('e2e: pesan mengalir di tab Chat lalu kartu status tab Runtime',
       (tester) async {
     app.main();
@@ -48,7 +50,7 @@ void main() {
     expect(find.textContaining('Terpasang'), findsOneWidget);
     expect(find.textContaining('Berjalan di 127.0.0.1'), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
-  });
+  }, timeout: const Timeout(Duration(minutes: 40)));
 
   testWidgets('e2e: sesi "s1" tersambung dan daftar sesi menampilkan status',
       (tester) async {
@@ -60,7 +62,7 @@ void main() {
     await tester.tap(find.text('Sesi'));
     await tester.pumpAndSettle(const Duration(seconds: 2));
     expect(find.byType(SnackBar), findsNothing);
-  });
+  }, timeout: const Timeout(Duration(minutes: 40)));
 }
 
 /// Mendaftarkan method-channel handler palsu + event progress statis.

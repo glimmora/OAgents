@@ -271,8 +271,13 @@ jobs:
           # dijalankan sebagai satu shell dan memicu syntax error. Loop
           # retry install harus satu baris penuh.
           script: |
-            n=0; until adb install -r app-debug.apk; do n=$((n+1)); if [ "$n" -ge 6 ]; then echo "Install gagal 6x — berhenti."; exit 1; fi; echo "Install percobaan $n gagal — tunggu 30 dtk."; sleep 30; done
-            flutter test integration_test/app_e2e_test.dart -d emulator --dart-define=E2E_FAKE_BRIDGE=true
+            # JANGAN adb install manual: artefak dari job "build" dibangun di
+            # runner lain dengan debug-keystore berbeda → flutter test yang
+            # membangun & menginstal APK-nya sendiri bentrok signature
+            # (INSTALL_FAILED_UPDATE_INCOMPATIBLE). flutter test mengurus
+            # install sendiri. --timeout=30m: pumpAndSettle di TCG lambat
+            # melampaui default 12 menit per test.
+            flutter test integration_test/app_e2e_test.dart -d emulator --dart-define=E2E_FAKE_BRIDGE=true --timeout=30m
 
       # Ringkasan warning bila e2e bermasalah (continue-on-error membuat job
       # tidak menggagalkan pipeline — catat jelas di summary).

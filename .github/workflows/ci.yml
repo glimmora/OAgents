@@ -41,7 +41,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.
@@ -89,7 +89,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.
@@ -164,7 +164,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.
@@ -212,7 +212,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.
@@ -281,7 +281,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.x'
+          flutter-version: '3.24.5'
           cache: true
 
       # Cache paket pub — key dari hash pubspec.yaml.

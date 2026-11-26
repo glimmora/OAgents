@@ -313,7 +313,4 @@ class _FakeEventChannel implements EventChannel {
   @override
   BinaryMessenger get binaryMessenger =>
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-
-  @override
-  MethodCodec get codec => const StandardMethodCodec();
 }

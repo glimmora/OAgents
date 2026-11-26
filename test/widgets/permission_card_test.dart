@@ -62,13 +62,7 @@ void main() {
     await tester.tap(find.text('Tolak'));
     await tester.pump();
     expect(n, 2);
-<<<<<<< HEAD
     // Kontrak UI: tanpa SnackBar. (ScaffoldMessenger memang selalu ada
-    // di MaterialApp — keberadaannya bukan berarti SnackBar tampil.)
-=======
-    // SnackBar tidak boleh muncul (kontrak tanpa popup). ScaffoldMessenger
-    // selalu ada di dalam MaterialApp (built-in) — bukan indikator popup.
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
-    expect(find.byType(SnackBar), findsNothing);
+    // di MaterialApp — keberadaannya bukan berarti SnackBar tampil.)    expect(find.byType(SnackBar), findsNothing);
   });
 }

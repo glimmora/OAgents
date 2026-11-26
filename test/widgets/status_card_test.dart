@@ -57,11 +57,7 @@ void main() {
   });
 
   group('PermissionCard — keputusan izin tool', () {
-<<<<<<< HEAD
-    PermissionRequest req() => PermissionRequest(
-=======
-    PermissionRequest _req({bool? decided}) => PermissionRequest(
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
+    PermissionRequest req({bool? decided}) => PermissionRequest(
           requestId: 'r-1',
           tool: 'bash',
           summary: 'rm -rf /tmp/bersih',
@@ -104,7 +100,6 @@ void main() {
 
     testWidgets('tanpa callback: tombol nonaktif, tekan tidak melempar',
         (tester) async {
-<<<<<<< HEAD
       await tester.pumpWidget(_wrap(PermissionCard(request: req())));
       // Tombol Setuju dibangun FilledButton.icon (subclass privat _FilledButtonWithIcon)
       // — cari lewat widget leluhur ButtonStyleButton milik tombol berteck 'Setuju'.
@@ -116,11 +111,6 @@ void main() {
         tester.widget<ButtonStyleButton>(btn).onPressed,
         isNull,
       );
-=======
-      await tester.pumpWidget(_wrap(PermissionCard(request: _req())));
-      // FilledButton.icon/OutlinedButton.icon tidak cocok dengan byType;
-      // cek lewat teks label: tombol tanpa onPressed tidak melempar.
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
       await tester.tap(find.text('Setuju'), warnIfMissed: false);
       await tester.pump();
       expect(find.byType(SnackBar), findsNothing);
@@ -128,13 +118,7 @@ void main() {
 
     testWidgets('sudah diputuskan → status "Disetujuji" tanpa tombol',
         (tester) async {
-<<<<<<< HEAD
-      final r = req()..decided = true;
-=======
-      final r = _req(
-        decided: true,
-      );
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
+      final r = req(decided: true);
       await tester.pumpWidget(_wrap(PermissionCard(request: r)));
       expect(find.text('Setuju'), findsNothing);
       expect(find.textContaining('Disetujuji'), findsOneWidget);

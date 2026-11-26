@@ -96,19 +96,11 @@ class ServerStatus {
   });
 
   factory ServerStatus.fromJson(Map<String, dynamic> json) {
-<<<<<<< HEAD
     // `serverStatus` mengirim `running`; `startServer` (kontrak bridge)
     // mengirim `ok` — keduanya berarti server hidup.
     final running = json['running'] == true || json['ok'] == true;
     return ServerStatus(
       running: running,
-=======
-    // `startServer` mengirim {ok, pid, port}; `serverStatus` mengirim
-    // {running, pid, port, upMs} — ok/running dua nama untuk status hidup.
-    final ok = json['ok'] == true || json['running'] == true;
-    return ServerStatus(
-      running: ok,
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
       pid: _asInt(json['pid']),
       port: _asInt(json['port']),
       upMs: _asInt(json['upMs']),

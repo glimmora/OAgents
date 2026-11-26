@@ -22,15 +22,9 @@ class SseParser {
   String? _lastEventId;
   String _eventType = 'message';
 
-<<<<<<< HEAD
   /// Sisa baris parsial dari chunk sebelumnya — jaringan dapat memotong di
   /// tengah baris; baris baru diproses hanya bila terminatornya terlihat.
   String _pending = '';
-=======
-  /// Baris parsial yang belum berakhir terminator (jaringan memotong di
-  /// tengah baris); disatukan dengan chunk berikutnya sebelum diproses.
-  String _pendingLine = '';
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
 
   /// Memasukkan satu potongan teks mentah (boleh sebagian baris, karena
   /// jaringan dapat memotong di tengah baris) dan mengeluarkan event
@@ -40,21 +34,12 @@ class SseParser {
   /// TIDAK dianggap baris kosong tersendiri — dispatch hanya terjadi bila
   /// ada baris kosong sungguhan di antara field (dua terminator beruntun).
   void push(String chunk) {
-<<<<<<< HEAD
     final normalized = chunk.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     final combined = _pending + normalized;
     final lines = combined.split('\n');
     // Elemen terakhir belum tentu baris utuh: bila combined tidak diakhiri
     // terminator, elemen itu baris parsial — simpan untuk push berikutnya.
     _pending = lines.removeLast();
-=======
-    var text = _pendingLine + chunk;
-    text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-    final lines = text.split('\n');
-    // Elemen terakhir hasil split belum tentu baris utuh: bila teks tidak
-    // berakhir '\n', itu baris parsial → tahan untuk chunk berikutnya.
-    _pendingLine = lines.removeLast();
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     for (final line in lines) {
       _handleLine(line);
     }
@@ -62,7 +47,6 @@ class SseParser {
 
   /// Memaksa event yang masih menumpuk keluar — dipanggil saat aliran tutup.
   void close() {
-<<<<<<< HEAD
     if (_pending.isNotEmpty) {
       _handleLine(_pending);
       _pending = '';
@@ -73,19 +57,6 @@ class SseParser {
   /// State apakah ada event parsial yang menunggu baris kosong.
   bool get hasBufferedEvent =>
       _pending.isNotEmpty || _dataLines.isNotEmpty || _lastEventId != null;
-=======
-    if (_pendingLine.isNotEmpty) {
-      final line = _pendingLine;
-      _pendingLine = '';
-      _handleLine(line);
-    }
-    if (_dataLines.isNotEmpty) _emit();
-  }
-
-  /// State apakah ada event parsial yang menunggu baris kosong.
-  bool get hasBufferedEvent => _dataLines.isNotEmpty;
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
-
   void _handleLine(String line) {
     if (line.isEmpty) {
       _emit();
@@ -104,7 +75,6 @@ class SseParser {
       // Spasi setelah titik dua dipangkas (semua, bukan satu — kontrak
       // nilai "data:   x" tetap "x", bukan "  x").
       value = line.substring(colon + 1);
-<<<<<<< HEAD
       // Spasi langsung setelah titik dua dipangkas. Spesifikasi SSE hanya
       // memangkas satu spasi, tetapi opencode menulis payload JSON dengan
       // indentasi; memangkas semua spasi awal aman untuk nilai field kami
@@ -112,9 +82,6 @@ class SseParser {
       while (value.startsWith(' ')) {
         value = value.substring(1);
       }
-=======
-      if (value.startsWith(' ')) value = value.replaceFirst(RegExp('^ +'), '');
->>>>>>> fe667b1 (Perbaikan build rilis: signing keystore, split-per-ABI, ikon, R8, SseParser, 97 test hijau)
     }
 
     switch (field) {

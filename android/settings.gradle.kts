@@ -23,7 +23,7 @@ plugins {
     // ke app bila daftar plugin kosong).
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.android") version "2.4.21" apply false
     id("com.android.application") version "8.7.3" apply false
 }
 

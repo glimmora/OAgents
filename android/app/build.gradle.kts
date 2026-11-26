@@ -15,10 +15,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
     defaultConfig {
         applicationId = "com.glimmora.oagents"
         minSdk = 26
@@ -72,4 +68,12 @@ flutter {
 dependencies {
     // Kotlin stdlib saja + org.json (bundel Android) — tanpa library eksternal.
     // Tidak ada implementasi tambahan (kontrak BRIDGE_CONTRACT.md).
+}
+
+// KGP modern: compilerOptions DSL — kotlinOptions(String) kini error
+// pada Gradle 8.9 + KGP 1.9.24 (kotl.in/u1r8ln).
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
 }

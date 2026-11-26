@@ -9,8 +9,8 @@ import 'package:flutter_driver/flutter_driver.dart';
 Future<void> main() async {
   final FlutterDriver driver = await FlutterDriver.connect();
   await driver.waitUntilFirstFrameRasterized();
-  final String? result =
-      await driver.requestData('integration-test-done', timeout: const Duration(minutes: 60));
+  final String result = await driver.requestData('integration-test-done',
+      timeout: const Duration(minutes: 60));
   print('Hasil integration test: $result');
   await driver.close();
 }

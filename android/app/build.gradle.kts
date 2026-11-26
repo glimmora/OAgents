@@ -63,7 +63,28 @@ android {
         }
     }
 
+    // ---- Signing debug deterministik -------------------------------------
+    // Keystore debug di-repo (bukan ~/.android/debug.keystore per-runner):
+    // job build (pembuat artefak APK debug) dan job e2e berada di runner
+    // BERBEDA — tanpa pin, signature tidak pernah cocok antar-runner.
+    val debugKeystore = rootProject.file("app/debug/app-debug.keystore")
+    if (debugKeystore.exists()) {
+        signingConfigs {
+            create("debugPinned") {
+                storeFile = debugKeystore
+                storePassword = "oagents-debug-2026"
+                keyAlias = "oagents-debug"
+                keyPassword = "oagents-debug-2026"
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            if (debugKeystore.exists()) {
+                signingConfig = signingConfigs.getByName("debugPinned")
+            }
+        }
         release {
             // R8 aktif untuk ukuran kecil; keep rules plugin ada di proguard-rules.pro.
             isMinifyEnabled = true
@@ -77,7 +98,7 @@ android {
             } else {
                 // Tanpa keystore (build lokal tanpa env) → debug key supaya
                 // tetap bisa dibangun; CI rilis selalu menyediakan keystore.
-                signingConfigs.getByName("debug")
+                signingConfigs.getByName("debugPinned")
             }
         }
     }

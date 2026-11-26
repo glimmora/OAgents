@@ -15,6 +15,9 @@ android/app/release/
 *.jks
 *.keystore
 key.properties
+# KECUALI keystore debug deterministik (bukan rahasia; signature harus
+# sama di semua runner supaya artefak APK debug bisa dipasang lintas job).
+!android/app/debug/app-debug.keystore
 
 # Lingkungan & runtime (tidak masuk repo)
 rootfs/

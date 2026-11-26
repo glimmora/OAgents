@@ -193,9 +193,12 @@ jobs:
   # Jika emulator arm64 gagal boot, job dilanjutkan dengan warning — jangan
   # gagalkan pipeline (masih tahap awal v0.1.0).
   e2e:
-    name: e2e (emulator arm64)
+    # Emulator x64: Flutter 3.24 tidak merilis SDK linux-arm64, jadi e2e
+    # dijalankan pada emulator x64 standar; pengujian tetap memakai bridge
+    # palsu (tanpa proot asli) sehingga arsitektur device tidak relevan.
+    name: e2e (emulator x64)
     needs: build
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     continue-on-error: true
     steps:
@@ -237,7 +240,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
-          arch: arm64-v8a
+          arch: x86_64
           target: google_apis
           profile: pixel
           emulator-boot-timeout: 300

@@ -264,9 +264,19 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel
-          emulator-boot-timeout: 600
+          # Boot TCG terukur 531 dtk di runner ini — beri ruang 900 dtk.
+          emulator-boot-timeout: 900
           script: |
-            adb install -r app-debug.apk
+            # Tepat setelah boot_completed, package service kadang belum siap
+            # → "adb: failed to install ... Broken pipe (32)". Ulangi install
+            # hingga 6x dengan jeda 30 dtk sebelum menyerah.
+            n=0
+            until adb install -r app-debug.apk; do
+              n=$((n+1))
+              if [ "$n" -ge 6 ]; then echo "Install gagal 6x — berhenti."; exit 1; fi
+              echo "Install percobaan $n gagal — tunggu 30 dtk."
+              sleep 30
+            done
             flutter test integration_test/app_e2e_test.dart -d emulator --dart-define=E2E_FAKE_BRIDGE=true
 
       # Ringkasan warning bila e2e bermasalah (continue-on-error membuat job

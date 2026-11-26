@@ -245,7 +245,7 @@ jobs:
           rm -f "$FD/bin/cache/flutter_tools.snapshot" "$FD/bin/cache/flutter_tools.stamp"
 
       - name: Unduh APK debug
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: app-debug-apk
 

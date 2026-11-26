@@ -23,9 +23,7 @@ android {
         versionName = flutter.versionName
 
         // proot hanya dibangun untuk aarch64 — ABI tunggal.
-        ndk {
-            abiFilters += listOf("arm64-v8a")
-        }
+      // ABI ditata oleh splits + --split-per-abi (ndk abiFilters bentrok dengan splits AGP).
     }
 
     // proot hasil CI disalin ke android/app/libs/arm64-v8a/libproot.so

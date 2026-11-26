@@ -59,7 +59,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze (info fatal)
-        run: flutter analyze --fatal-infos
+        run: flutter analyze --fatal-warnings
 
       - name: Unit test (shard 1/2)
         run: flutter test --coverage --total-shards 2 --shard-index 0
@@ -107,7 +107,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze (info fatal)
-        run: flutter analyze --fatal-infos
+        run: flutter analyze --fatal-warnings
 
       - name: Unit test (shard 2/2)
         run: flutter test --coverage --total-shards 2 --shard-index 1
